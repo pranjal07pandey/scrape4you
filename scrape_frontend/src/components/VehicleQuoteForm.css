@@ -1,0 +1,142 @@
+/* Add background to the entire page */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: url('background_image.jpg') no-repeat center center fixed;
+    background-size: cover;
+  }
+  
+  /* Center the form and create a floating effect */
+  .form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    text-align: center;
+  }
+  
+  /* Uniform padding for input fields and textareas */
+  input,
+  textarea {
+    width: calc(100% - 20px); /* Ensure inputs fit within the border */
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Ensure padding doesn't break layout */
+  }
+  
+  /* Styling for the form group */
+  .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  
+/* Container for the radio groups */
+.radio-groups-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Aligns the radio groups to the left */
+    gap: 50px; /* Space between the radio groups */
+  }
+  
+  /* Styling for individual radio groups */
+  .radio-group1,
+  .radio-group2 {
+    display: flex;
+    align-items: left;
+    justify-content: left;
+    /* padding: 10px 20px; Padding inside each group */
+    border: 1px solid black; /* Light border around each group */
+    /* border-radius: 8px; Rounded corners */
+    /* cursor: pointer; Pointer cursor for better UX */
+    transition: all 0.3s ease; /* Smooth hover effect */
+
+    width: calc(100% - 25px); /* Ensure inputs fit within the border */
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+
+  }
+  
+  /* Hover effect */
+  .radio-group1:hover,
+  .radio-group2:hover {
+    border-color: #007bff; /* Change border color on hover */
+    background-color: #f0f8ff; /* Optional: light background color */
+  }
+  
+  /* Radio buttons - Hide the default appearance */
+  /* .radio-group1 input[type="radio"],
+  .radio-group2 input[type="radio"] {
+    display: none;
+  } */
+  
+  /* Label styling */
+  .radio-group1 label,
+  .radio-group2 label {
+    font-size: 14px;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  
+  
+  /* Button styling */
+  .submit-button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+  }
+  
+  .submit-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Footer styling */
+  .footer-text {
+    font-size: 12px;
+    margin: 20px 0;
+    color: gray;
+  }
+  
+  .app-buttons img {
+    height: 40px;
+    margin: 0 10px;
+  }
+  
+  /* Align headings and descriptions */
+  h2 {
+    font-size: 24px;
+    color: #007bff;
+    text-align: left;
+    font-family: sans-serif;
+
+  }
+  
+
+  /* Adjust phone input styling */
+.form-container .react-tel-input .form-control {
+    width: calc(100% - 20px);
+  }
+
+  .phone-number-field{
+    /* padding: 10px; */
+    margin-top: 10px;
+  }
+  
+  
+  
+  
+ 
+  
