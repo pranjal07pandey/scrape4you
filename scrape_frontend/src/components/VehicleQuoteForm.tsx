@@ -9,8 +9,9 @@ const VehicleQuoteForm: React.FC = () => {
     postcode: "",
     phoneNumber: "",
     problem: "",
-    engineRunning: "Yes",
   });
+
+  const [isSuccess, setIsSuccess] = useState(false); // To control the success modal visibility
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -23,11 +24,26 @@ const VehicleQuoteForm: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert(JSON.stringify(formData, null, 2));
+    // alert(JSON.stringify(formData, null, 2));
+    // Simulate form submission and show the success modal
+    setIsSuccess(true);
+  };
+
+  const closeSuccessModal = () => {
+    setIsSuccess(false);
+    setFormData({ registration: "", postcode: "", phoneNumber: "", problem: "" }); // Reset the form
+
+    
+  };
+
+  const backToHomePage = () => {
+    setIsSuccess(false); 
+    setFormData({ registration: "", postcode: "", phoneNumber: "", problem: "" }); // Reset the form
   };
 
   return (
-    <div className="form-container">
+    <>
+    <div className={`form-container ${isSuccess ? "blur-background" : ""}`}>
       <h2>Get Paid More - Enter your reg and get an Offer that beats Scrap Value!</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -53,6 +69,17 @@ const VehicleQuoteForm: React.FC = () => {
         </div>
 
         <div className="form-group">
+          <label>Vehicle issues (Clutch gone, Engine Light on, MOT failed, etc.)</label>
+          <input
+            type="text"
+            name="problem"
+            value={formData.problem}
+            onChange={handleChange}
+            placeholder="Place your issues here.."
+          />
+        </div>
+
+        <div className="form-group">
         <label htmlFor="phone-number">Phone Number</label> 
           <div className="phone-number-field">
             <PhoneInput
@@ -67,6 +94,10 @@ const VehicleQuoteForm: React.FC = () => {
         </div>
 
         <div className="form-group">
+          <small>* No hidden charges for removal, paperwork or other fees</small>
+        </div>
+
+        {/* <div className="form-group">
           <label>Problem</label>
           <textarea
             name="problem"
@@ -74,9 +105,9 @@ const VehicleQuoteForm: React.FC = () => {
             onChange={handleChange}
             placeholder="Problem (e.g., Clutch gone, Engine Light on, MOT failed, etc.)"
           ></textarea>
-        </div>
+        </div> */}
 
-        <div className="form-group">
+        {/* <div className="form-group">
           <label>Engine Running?</label>
           <div className="radio-groups-container">
           <div className="radio-group1">
@@ -107,7 +138,7 @@ const VehicleQuoteForm: React.FC = () => {
             </div>
           </div>
           
-        </div>
+        </div> */}
 
         <button type="submit" className="submit-button">
           Get your Quote
@@ -129,6 +160,49 @@ const VehicleQuoteForm: React.FC = () => {
         </a>
       </div>
     </div>
+
+    {/* Success Modal */}
+    {isSuccess && (
+        <div className="success-modal">
+          <div className="modal-content">
+            <span className="close-button" onClick={closeSuccessModal}>
+              &times;
+            </span>
+            <div className="icon-container">
+              <img src="success.png" alt="Success Icon" className="success-icon" />
+            </div>
+            <h1>Quote submitted Successfully!</h1>
+            <p>Local Buyers will reach out to you shortly.</p>
+            <p>
+              Additionally, we will send a link to your phone number, allowing you to
+              view, edit, or directly connect with local agents at your convenience.
+            </p>
+            <div className="feedback-section">
+              <div className="feedback-label">
+                From where did you hear about us?
+              </div>
+              <select>
+                <option value="facebook">Facebook</option>
+                <option value="google">Google</option>
+                <option value="friends">Friends</option>
+                <option value="others">Others</option>
+              </select>
+            </div>
+
+            {/* Back to Home Page Button */}
+            <div className="back-home-btn-container">
+              <button className="back-home-button" onClick={backToHomePage}>
+                Back to Home Page
+              </button>
+            </div>
+
+
+          </div>
+        </div>
+      )}
+
+    </>
+
   );
 };
 
