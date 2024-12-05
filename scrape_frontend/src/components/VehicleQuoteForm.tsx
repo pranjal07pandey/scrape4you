@@ -3,42 +3,119 @@ import "./VehicleQuoteForm.css";
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
+// Define the types for the form data and errors
+interface FormData {
+  registrationNumber: string;
+  postcode: string;
+  phoneNumber: string;
+  problem: string;
+  carPhoto: File | null; // Can be null or a File
+}
+
+interface FormErrors {
+  registrationNumber?: string;
+  postcode?: string;
+  phoneNumber?: string;
+  problem?: string;
+}
+
 const VehicleQuoteForm: React.FC = () => {
-  const [formData, setFormData] = useState({
-    registration: "",
+  const [formData, setFormData] = useState <FormData> ({
+    registrationNumber: "",
     postcode: "",
     phoneNumber: "",
     problem: "",
+    carPhoto: null
   });
 
   const [isSuccess, setIsSuccess] = useState(false); // To control the success modal visibility
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    setErrors({ ...errors, [name]: "" }); // Clear error for this field
   };
 
   const handlePhoneChange = (value: string) => {
-    console.log('Phone number:', value);
+    setFormData({ ...formData, phoneNumber: value });
+    setErrors({ ...errors, phoneNumber: "" });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFormData({ ...formData, carPhoto: e.target.files[0] });
+    }
+  };
+
+  const validateForm = () =>{
+    const newErrors : FormErrors = {};
+    
+    if (!formData.registrationNumber.trim()) {
+      newErrors.registrationNumber = "Registration number is required.";
+    }
+
+    if (!formData.postcode.trim()) {
+      newErrors.postcode = "Postcode is required.";
+    } 
+
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = "Phone number is required.";
+    }
+
+    return newErrors;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // alert(JSON.stringify(formData, null, 2));
+
+    console.log(formData)
+
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setLoading(true) // start loading
+
     // Simulate form submission and show the success modal
+    try {
+      const response = await fetch('http://localhost:5000/car/submit-form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      console.log('Response from server:', data);
+
+      setIsSuccess(true);
+
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    } finally{
+      setLoading(false) // end loading
+    }
+
     setIsSuccess(true);
+
+
   };
 
   const closeSuccessModal = () => {
     setIsSuccess(false);
-    setFormData({ registration: "", postcode: "", phoneNumber: "", problem: "" }); // Reset the form
+    setFormData({ registrationNumber: "", postcode: "", phoneNumber: "", problem: "", carPhoto: null }); // Reset the form
 
-    
   };
 
   const backToHomePage = () => {
     setIsSuccess(false); 
-    setFormData({ registration: "", postcode: "", phoneNumber: "", problem: "" }); // Reset the form
+    setFormData({ registrationNumber: "", postcode: "", phoneNumber: "", problem: "", carPhoto: null }); // Reset the form
   };
 
   return (
@@ -50,11 +127,14 @@ const VehicleQuoteForm: React.FC = () => {
           <label>Vehicle Registration</label>
           <input
             type="text"
-            name="registration"
-            value={formData.registration}
-            onChange={handleChange}
+            name="registrationNumber"
+            value={formData.registrationNumber}
+            onChange={handleInputChange}
             placeholder="Vehicle Registration Number.."
           />
+          {errors.registrationNumber && (
+          <div className="error-message">{errors.registrationNumber}</div>
+        )}
         </div>
 
         <div className="form-group">
@@ -63,9 +143,10 @@ const VehicleQuoteForm: React.FC = () => {
             type="text"
             name="postcode"
             value={formData.postcode}
-            onChange={handleChange}
+            onChange={handleInputChange}
             placeholder="Post Code.."
           />
+          {errors.postcode && <div className="error-message">{errors.postcode}</div>}
         </div>
 
         <div className="form-group">
@@ -74,7 +155,7 @@ const VehicleQuoteForm: React.FC = () => {
             type="text"
             name="problem"
             value={formData.problem}
-            onChange={handleChange}
+            onChange={handleInputChange}
             placeholder="Place your issues here.."
           />
         </div>
@@ -84,65 +165,48 @@ const VehicleQuoteForm: React.FC = () => {
           <div className="phone-number-field">
             <PhoneInput
             country="gb" // Default country code (UK)
-            onChange={handlePhoneChange}
+            // onChange={handleChange}
             inputClass="phone-input"
             buttonClass="phone-dropdown"
             value={formData.phoneNumber}
+            onChange={handlePhoneChange}
+            
           />
+          {errors.phoneNumber && (
+          <div className="error-message">{errors.phoneNumber}</div> )}
+
          </div>
             
         </div>
 
+        {/* Photo Upload Feature */}
+    <div className="form-group">
+      <label htmlFor="car-photo">Upload Car Image (optional)</label>
+      <input
+        type="file"
+        id="car-photo"
+        name="carPhoto"
+        accept="image/*"
+        onChange={handleFileChange}
+      />
+      
+    </div>
+
         <div className="form-group">
           <small>* No hidden charges for removal, paperwork or other fees</small>
         </div>
+        
 
-        {/* <div className="form-group">
-          <label>Problem</label>
-          <textarea
-            name="problem"
-            value={formData.problem}
-            onChange={handleChange}
-            placeholder="Problem (e.g., Clutch gone, Engine Light on, MOT failed, etc.)"
-          ></textarea>
-        </div> */}
-
-        {/* <div className="form-group">
-          <label>Engine Running?</label>
-          <div className="radio-groups-container">
-          <div className="radio-group1">
-            <label>
-              <input
-                type="radio"
-                name="engineRunning"
-                value="Yes"
-                checked={formData.engineRunning === "Yes"}
-                onChange={handleChange}
-              />
-              Yes
-            </label>
-          </div>
-
-          <div className="radio-group2">
-
-            <label>
-              <input
-                type="radio"
-                name="engineRunning"
-                value="No"
-                checked={formData.engineRunning === "No"}
-                onChange={handleChange}
-              />
-              No
-            </label>
-            </div>
-          </div>
-          
-        </div> */}
-
-        <button type="submit" className="submit-button">
-          Get your Quote
+        <button type="submit" disabled={loading} className="submit-button">
+        {loading ? (
+          <>
+            <span className="spinner"></span> Submitting..
+          </>
+        ) : (
+          "Get Your Quote"
+        )}
         </button>
+
       </form>
 
       <p className="footer-text">
