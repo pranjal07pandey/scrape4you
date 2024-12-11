@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { CarInfoService } from './car-info/car-info.service';
 import { CarInfoController } from './car-info/car-info.controller';
 
-
+import { ConfigModule } from '@nestjs/config';
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -16,12 +16,14 @@ import { CarDetailsService } from './car-details.service';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
+
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'scrape_frontend', 'build'), // Path to React build folder
     }),
-    MongooseModule.forRoot('mongodb+srv://pranjalpandey1369:LI3e0ONgurGNTLWJ@cluster0.5wv8x.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
-
-    }),
+    MongooseModule.forRoot(process.env.MONGODB_URL),
     MongooseModule.forFeature([{ name: CarDetails.name, schema: CarDetailsSchema }]), // Register the schema
   ],
   controllers: [AppController, CarInfoController],
