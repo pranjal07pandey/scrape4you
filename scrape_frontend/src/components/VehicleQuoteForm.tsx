@@ -83,7 +83,7 @@ const VehicleQuoteForm: React.FC = () => {
 
     // Simulate form submission and show the success modal
     try {
-      const response = await fetch('http://localhost:5000/car/submit-form', {
+      const response = await fetch('/car/submit-form', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ const VehicleQuoteForm: React.FC = () => {
       <h2>Get Paid More - Enter your reg and get an Offer that beats Scrap Value!</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>Vehicle Registration</label>
+          <label className="form-label">Vehicle Registration</label>
           <input
             type="text"
             name="registrationNumber"
@@ -138,7 +138,7 @@ const VehicleQuoteForm: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label>Post Code</label>
+          <label className="form-label">Post Code</label>
           <input
             type="text"
             name="postcode"
@@ -150,7 +150,7 @@ const VehicleQuoteForm: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label>Vehicle issues (Clutch gone, Engine Light on, MOT failed, etc.)</label>
+          <label className="form-label">Vehicle issues (Clutch gone, Engine Light on, MOT failed, etc.)</label>
           <input
             type="text"
             name="problem"
@@ -161,7 +161,7 @@ const VehicleQuoteForm: React.FC = () => {
         </div>
 
         <div className="form-group">
-        <label htmlFor="phone-number">Phone Number</label> 
+        <label htmlFor="phone-number" className="form-label">Phone Number</label> 
           <div className="phone-number-field">
             <PhoneInput
             country="gb" // Default country code (UK)
@@ -181,7 +181,7 @@ const VehicleQuoteForm: React.FC = () => {
 
         {/* Photo Upload Feature */}
     <div className="form-group">
-      <label htmlFor="car-photo">Upload Car Image (optional)</label>
+      <label htmlFor="car-photo" className="form-label">Upload Car Image (optional)</label>
       <input
         type="file"
         id="car-photo"
@@ -216,11 +216,11 @@ const VehicleQuoteForm: React.FC = () => {
       </p>
       <div className="app-buttons">
         <a href="www.apple.com">
-        <img src="/apple.png" alt="App Store" />
+        <img src="/apple_store.png" alt="App Store" />
         </a>
 
         <a href="www.google.com">
-        <img src="/google.png" alt="Google Play" />
+        <img src="/google_store.png" alt="Google Play" />
         </a>
       </div>
     </div>
