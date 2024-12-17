@@ -10,7 +10,7 @@ export class CarInfoService {
     constructor(private readonly carDetailsService: CarDetailsService) {}
 
     async getCarDetails(formData:any): Promise<any> {
-        const registrationNumber = formData.registrationNumber
+        const registrationNumber = formData.registrationNumber.replace(/\s+/g, '').toUpperCase()
         try {
             const response = await axios.post(`${this.apiUrl}`, 
               {

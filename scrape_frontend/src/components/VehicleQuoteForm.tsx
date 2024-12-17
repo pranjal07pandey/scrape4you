@@ -29,6 +29,7 @@ const VehicleQuoteForm: React.FC = () => {
   });
 
   const [isSuccess, setIsSuccess] = useState(false); // To control the success modal visibility
+  const [isFailure, setIsFailure] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
 
@@ -83,7 +84,7 @@ const VehicleQuoteForm: React.FC = () => {
 
     // Simulate form submission and show the success modal
     try {
-      const response = await fetch('/car/submit-form', {
+      const response = await fetch('http://localhost:5000/car/submit-form', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,33 +95,40 @@ const VehicleQuoteForm: React.FC = () => {
       const data = await response.json();
       console.log('Response from server:', data);
 
-      setIsSuccess(true);
+      if (data.success){
+        setIsSuccess(true);
+      }
+      else{
+        setIsFailure(true);
+      }
+
 
     } catch (error) {
       console.error('Error submitting form:', error);
+      setIsFailure(true)
     } finally{
       setLoading(false) // end loading
     }
-
-    setIsSuccess(true);
 
 
   };
 
   const closeSuccessModal = () => {
     setIsSuccess(false);
+    setIsFailure(false);
     setFormData({ registrationNumber: "", postcode: "", phoneNumber: "", problem: "", carPhoto: null }); // Reset the form
 
   };
 
   const backToHomePage = () => {
     setIsSuccess(false); 
+    setIsFailure(false);
     setFormData({ registrationNumber: "", postcode: "", phoneNumber: "", problem: "", carPhoto: null }); // Reset the form
   };
 
   return (
     <>
-    <div className={`form-container ${isSuccess ? "blur-background" : ""}`}>
+    <div className={`form-container ${isSuccess || isFailure ? "blur-background" : ""}`}>
       <h2>Get Paid More - Enter your reg and get an Offer that beats Scrap Value!</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -239,15 +247,18 @@ const VehicleQuoteForm: React.FC = () => {
             <p>Local Buyers will reach out to you shortly.</p>
             <p>
               Additionally, we will send a link to your phone number, allowing you to
-              view, edit, or directly connect with local agents at your convenience.
+              view, edit, or delete your posting at your convenience.
             </p>
             <div className="feedback-section">
               <div className="feedback-label">
                 From where did you hear about us?
               </div>
               <select>
+                <option value="not selected">--Select an Option--</option>
                 <option value="facebook">Facebook</option>
                 <option value="google">Google</option>
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
                 <option value="friends">Friends</option>
                 <option value="others">Others</option>
               </select>
@@ -257,6 +268,35 @@ const VehicleQuoteForm: React.FC = () => {
             <div className="back-home-btn-container">
               <button className="back-home-button" onClick={backToHomePage}>
                 Back to Home Page
+              </button>
+            </div>
+
+
+          </div>
+        </div>
+      )}
+
+      {/* Failure Modal */}
+    {isFailure && (
+        <div className="success-modal">
+          <div className="modal-content">
+            <span className="close-button" onClick={closeSuccessModal}>
+              &times;
+            </span>
+            <div className="icon-container">
+              <img src="failure.png" alt="Failure Icon" className="success-icon" />
+            </div>
+            <h1>Error in Submission!</h1>
+            <p>We could not submit your request.</p>
+            <small>
+              Please check all the inputs, including your vehicle registration number
+              and phone number are correct and try again.
+            </small>
+            
+            {/* Back to Home Page Button */}
+            <div className="back-home-btn-container">
+              <button className="back-home-button" onClick={backToHomePage}>
+                Try Again
               </button>
             </div>
 

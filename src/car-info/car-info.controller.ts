@@ -26,7 +26,7 @@ export class CarInfoController {
       const carDetails =  await this.carInfoService.getCarDetails(fromData);
 
       // Send sms notification
-      const message = `Hello, your information has been saved successfully. Our agent will contact you soon. Visit google.com`;
+      const message = `Hello, your information has been saved successfully. Our agent will contact you soon. Visit https://scrape4you.onrender.com/`;
       const smsResponse = await this.twilioClient.messages.create({
         to: fromData.phoneNumber,
         from: process.env.TWILIO_PHONE_NUMBER,
