@@ -84,7 +84,7 @@ const VehicleQuoteForm: React.FC = () => {
 
     // Simulate form submission and show the success modal
     try {
-      const response = await fetch('http://localhost:5000/car/submit-form', {
+      const response = await fetch('/car/submit-form', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
