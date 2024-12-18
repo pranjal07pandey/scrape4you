@@ -1,6 +1,7 @@
-import { Controller, Post, Get, Body, BadRequestException, Patch, Param, HttpStatus, HttpException} from '@nestjs/common';
+import { Controller, Post, Get, Body, BadRequestException, Patch, Param, HttpStatus, HttpException, Put, Delete} from '@nestjs/common';
 import { CarInfoService } from './car-info.service';
 import { Twilio } from 'twilio';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Controller('car')
 export class CarInfoController {
@@ -26,7 +27,9 @@ export class CarInfoController {
       const carDetails =  await this.carInfoService.getCarDetails(fromData);
 
       // Send sms notification
-      const message = `Hello, your information has been saved successfully. Our agent will contact you soon. Visit https://scrape4you.onrender.com/`;
+      const baseUrl = 'https://scrape4you.onrender.com/edit-form/'
+      const editLink = `${baseUrl}${carDetails.uniqueId}`
+      const message = `Hello, your information has been saved successfully. Our agent will contact you soon. In order to edit or delete your posting go to ${editLink}`;
       const smsResponse = await this.twilioClient.messages.create({
         to: fromData.phoneNumber,
         from: process.env.TWILIO_PHONE_NUMBER,
@@ -40,6 +43,11 @@ export class CarInfoController {
         smsResponse,
       };
 
+      // return{
+      //   success: true,
+      //   message: 'added successfully.',
+      //   carDetails
+      // }
 
     } catch (error) {
       
@@ -62,6 +70,51 @@ export class CarInfoController {
   @Get('get-all-listing')
   async getAllListings(){
     return this.carInfoService.getAllListing()
+  }
+
+  @Get('get-data/:uniqueId')
+  async getForm(@Param('uniqueId') uniqueId: string) {
+    return this.carInfoService.getFormByUniqueId(uniqueId);
+  }
+
+  @Put('edit-form/:uniqueId')
+  async updateForm(
+    @Param('uniqueId') uniqueId: string,
+    @Body() updatedData: any,) {
+    
+      try {
+        const carDetails = this.carInfoService.updateFormByUniqueId(uniqueId, updatedData);
+        return{
+          success: true,
+          message: 'updated successfully.',
+          carDetails
+        }
+        
+      } catch (error) {  
+        console.error('Error deleting the form:', error);
+        throw new HttpException('Failed to delete the data.', HttpStatus.INTERNAL_SERVER_ERROR);
+      
+      }
+    
+     
+  }
+
+  @Delete('delete-data/:uniqueId')
+  async deleteForm(@Param('uniqueId') uniqueId: string) {
+    try {
+      const details =  this.carInfoService.deleteFormByUniqueId(uniqueId);
+    return{
+      success: true,
+      message: 'deleted successfully.',
+      details
+    }
+      
+    } catch (error) {
+      console.error('Error deleting the form:', error);
+      throw new HttpException('Failed to delete the data.', HttpStatus.INTERNAL_SERVER_ERROR);
+      
+    }
+    
   }
 
 

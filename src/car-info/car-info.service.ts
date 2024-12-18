@@ -1,16 +1,18 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import axios from 'axios';
 import { CarDetailsService } from '../car-details.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class CarInfoService {
-    private readonly apiUrl = process.env.DVLA_TEST_URL;
-    private readonly apiKey = process.env.DVLA_TEST_KEY;
+    private readonly apiUrl = process.env.DVLA_MAIN_URL;
+    private readonly apiKey = process.env.DVLA_MAIN_KEY;
 
     constructor(private readonly carDetailsService: CarDetailsService) {}
 
     async getCarDetails(formData:any): Promise<any> {
         const registrationNumber = formData.registrationNumber.replace(/\s+/g, '').toUpperCase()
+        console.log("the input reg number is: ", registrationNumber)
         try {
             const response = await axios.post(`${this.apiUrl}`, 
               {
@@ -26,6 +28,7 @@ export class CarInfoService {
           const car_details = response.data;
 
           // Store car details in the database
+          const uniqueId = uuidv4();
           const carData = {
             registrationNumber: car_details.registrationNumber,
             make: car_details.make,
@@ -40,8 +43,9 @@ export class CarInfoService {
             problem: formData.problem,
             phoneNumber: formData.phoneNumber,
             carImage: formData.carImage,
-            
 
+            uniqueId: uniqueId // add unique id to the database entry
+            
           };
 
           // Save to MongoDB
@@ -49,7 +53,7 @@ export class CarInfoService {
 
           // console.log(response.status)
 
-          return {'status': response.status, 'statusText': response.statusText};
+          return {'status': response.status, 'statusText': response.statusText, 'uniqueId': carData.uniqueId};
 
           
         } catch (error) {
@@ -70,6 +74,17 @@ export class CarInfoService {
       return allListing;
     }
 
+    async getFormByUniqueId(uniqueId: string): Promise<any>{
+      return await this.carDetailsService.getFormByUniqueId(uniqueId);
+    }
+
+    async updateFormByUniqueId(uniqueId: string, updatedData:any): Promise<any>{
+      return await this.carDetailsService.updateFormByUniqueId(uniqueId, updatedData);
+    }
+
+    async deleteFormByUniqueId(uniqueId: string): Promise<any>{
+      return await this.carDetailsService.deleteFormByUniqueId(uniqueId);
+    }
     
 
 }

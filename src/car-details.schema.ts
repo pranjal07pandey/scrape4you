@@ -45,6 +45,9 @@ export class CarDetails {
   @Prop({ default: Date.now }) // Automatically set current date and time
   date_added: Date;
 
+  @Prop({required: true, unique:true})
+  uniqueId: string;
+
 }
 
 export const CarDetailsSchema = SchemaFactory.createForClass(CarDetails);
