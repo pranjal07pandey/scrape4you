@@ -1,6 +1,8 @@
-import { Controller, Post, Get, Body, BadRequestException, Patch, Param, HttpStatus, HttpException, Put, Delete} from '@nestjs/common';
+import { Controller, Post, Get, Body, BadRequestException, Patch, Param, HttpStatus, HttpException, Put, Delete, UseGuards} from '@nestjs/common';
 import { CarInfoService } from './car-info.service';
 import { Twilio } from 'twilio';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Controller('car')
@@ -67,6 +69,7 @@ export class CarInfoController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('get-all-listing')
   async getAllListings(){
     return this.carInfoService.getAllListing()

@@ -14,6 +14,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CarDetails, CarDetailsSchema } from './car-details.schema'; // Import the schema
 import { CarDetailsService } from './car-details.service';
 
+import { AuthModule } from './auth/auth.module';
+import { AuthController } from './auth/auth.controller';  // Import AuthController
+import { User, UserSchema } from './auth/schemas/user.schema';  // Import User schema
+import { AuthService } from './auth/auth.service';
+import { UserService } from './auth/user.service';
+import { JwtModule } from '@nestjs/jwt';  // Import JwtModule (if using in AppModule)
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,9 +30,20 @@ import { CarDetailsService } from './car-details.service';
       rootPath: join(__dirname, '..', 'scrape_frontend', 'build'), // Path to React build folder
     }),
     MongooseModule.forRoot(process.env.MONGODB_URL),
-    MongooseModule.forFeature([{ name: CarDetails.name, schema: CarDetailsSchema }]), // Register the schema
+    MongooseModule.forFeature([
+      { name: CarDetails.name, schema: CarDetailsSchema },  // Car schema
+      { name: User.name, schema: UserSchema }               // User schema
+    ]),
+    
+    JwtModule.register({
+      secret: process.env.JWT_SECRET, // Make sure this is correct
+      signOptions: { expiresIn: '1h' }, // You can adjust the expiration time
+    }),
+
+    AuthModule, // Auth module handles registration and login
+
   ],
-  controllers: [AppController, CarInfoController],
-  providers: [AppService, CarInfoService, CarDetailsService],
+  controllers: [AppController, CarInfoController, AuthController],
+  providers: [AppService, CarInfoService, CarDetailsService, AuthService, UserService,],
 })
 export class AppModule {}
