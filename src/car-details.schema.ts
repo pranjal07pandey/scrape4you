@@ -31,6 +31,12 @@ export class CarDetails {
   postcode: string;
 
   @Prop()
+  latitude: string;
+
+  @Prop()
+  longitude: string;
+
+  @Prop()
   problem?: string;
 
   @Prop({ required: true })
@@ -38,6 +44,9 @@ export class CarDetails {
 
   @Prop()
   carImage?: string;
+
+  @Prop({ required: true, enum: ['scrape', 'salvage'] })
+  tag: string;
 
   @Prop({ default: false }) // Default to false
   isSold: boolean;

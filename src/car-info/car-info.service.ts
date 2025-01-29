@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class CarInfoService {
     private readonly apiUrl = process.env.DVLA_MAIN_URL;
     private readonly apiKey = process.env.DVLA_MAIN_KEY;
+    private readonly POSTCODE_API_URL = 'https://api.postcodes.io/postcodes';
 
     constructor(private readonly carDetailsService: CarDetailsService) {}
 
@@ -27,6 +28,25 @@ export class CarInfoService {
 
           const car_details = response.data;
 
+          //Fetch latitude and longitude from postcode
+          let latitude = null;
+          let longitude = null;
+
+          try{
+            const locationResponse = await axios.get(`${this.POSTCODE_API_URL}/${encodeURIComponent(formData.postcode)}`);
+            latitude = locationResponse.data.result.latitude;
+            longitude = locationResponse.data.result.longitude;
+          }catch(error){
+            console.error("Failed to fetch coordinates:", error.message);
+            throw new HttpException(
+              'Invalid postcode provided. Please enter a correct UK postcode.',
+              HttpStatus.BAD_REQUEST
+            )
+          }
+
+          // Assign "scrape" or "salvage" tag with 50-50 probability
+          const tag = Math.random() < 0.5 ? "scrape" : "salvage";
+
           // Store car details in the database
           const uniqueId = uuidv4();
           const carData = {
@@ -40,9 +60,12 @@ export class CarInfoService {
 
             // form data
             postcode: formData.postcode,
+            latitude,
+            longitude,
             problem: formData.problem,
             phoneNumber: formData.phoneNumber,
             carImage: formData.carImage,
+            tag: tag,
 
             uniqueId: uniqueId // add unique id to the database entry
             
