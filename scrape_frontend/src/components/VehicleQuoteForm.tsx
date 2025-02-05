@@ -87,12 +87,23 @@ const VehicleQuoteForm: React.FC = () => {
       const local_url = 'http://localhost:5000/car/submit-form';
       const prod_url = '/car/submit-form';
 
+      //create a formdata object
+      const formDataToSend = new FormData();
+      formDataToSend.append('registrationNumber', formData.registrationNumber);
+      formDataToSend.append('postcode', formData.postcode);
+      formDataToSend.append('phoneNumber', formData.phoneNumber);
+      formDataToSend.append('problem', formData.problem);
+
+      // append the file if it exists:
+      if(formData.carPhoto){
+        formDataToSend.append('carPhoto', formData.carPhoto);
+      }
+      
+
+
       const response = await fetch(prod_url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: formDataToSend,
       });
 
       const data = await response.json();

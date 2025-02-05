@@ -1,48 +1,68 @@
-import { Controller, Post, Get, Body, BadRequestException, Patch, Param, HttpStatus, HttpException, Put, Delete, UseGuards} from '@nestjs/common';
+import { Controller, Post, Get, Body, BadRequestException, Patch, Param, HttpStatus, HttpException, Put, Delete, UseGuards, UseInterceptors, UploadedFile} from '@nestjs/common';
 import { CarInfoService } from './car-info.service';
 import { Twilio } from 'twilio';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express'; // Import Express types
+import { S3Service } from './upload-image'; // Import the S3 service
 
 @Controller('car')
 export class CarInfoController {
 
   private twilioClient: Twilio;
-  constructor(private readonly carInfoService: CarInfoService) {
+  constructor(
+    private readonly carInfoService: CarInfoService,
+    private readonly s3Service: S3Service) {
     this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
   }
 
   @Post('submit-form')
-  async getCarDetails(@Body() fromData: any) {
+  @UseInterceptors(FileInterceptor('carPhoto'))
 
-    console.log(fromData)
+  async getCarDetails(
+    @UploadedFile() carPhoto: Express.Multer.File,
+    @Body() body: any) {
 
-    if (!fromData.registrationNumber) {
+    console.log('This is formdata: ', body);
+    console.log('original file is: ', carPhoto);
+ 
+    let carImage = 'N/A'
+    if(carPhoto){
+        //upload the car image into s3
+        carImage = await this.s3Service.uploadFile(carPhoto)
+      }
+
+    const formData = {
+      ...body,
+      carImage: carImage
+    }
+    
+
+    if (!formData.registrationNumber) {
       throw new BadRequestException('Registration number is required');
     }   
 
     try {
 
       // save form data or perform business logic
-      const carDetails =  await this.carInfoService.getCarDetails(fromData);
+      const carDetails =  await this.carInfoService.getCarDetails(formData);
 
       // Send sms notification
       const baseUrl = 'https://scrape4you.onrender.com/edit-form/'
       const editLink = `${baseUrl}${carDetails.uniqueId}`
       const message = `Hello, your information has been saved successfully. Our agent will contact you soon. In order to edit or delete your posting go to ${editLink}`;
-      const smsResponse = await this.twilioClient.messages.create({
-        to: fromData.phoneNumber,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        body: message,
-      });
+      // const smsResponse = await this.twilioClient.messages.create({
+      //   to: fromData.phoneNumber,
+      //   from: process.env.TWILIO_PHONE_NUMBER,
+      //   body: message,
+      // });
 
       return {
         success: true,
         message: 'Form submitted successfully and SMS sent.',
         carDetails,
-        smsResponse,
+        // smsResponse,
       };
 
       // return{

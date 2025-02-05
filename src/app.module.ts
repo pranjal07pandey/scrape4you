@@ -20,6 +20,7 @@ import { User, UserSchema } from './auth/schemas/user.schema';  // Import User s
 import { AuthService } from './auth/auth.service';
 import { UserService } from './auth/user.service';
 import { JwtModule } from '@nestjs/jwt';  // Import JwtModule (if using in AppModule)
+import { S3Service } from './car-info/upload-image';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -44,6 +45,6 @@ import { JwtModule } from '@nestjs/jwt';  // Import JwtModule (if using in AppMo
 
   ],
   controllers: [AppController, CarInfoController, AuthController],
-  providers: [AppService, CarInfoService, CarDetailsService, AuthService, UserService,],
+  providers: [AppService, CarInfoService, CarDetailsService, AuthService, UserService, S3Service],
 })
 export class AppModule {}

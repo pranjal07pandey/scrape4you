@@ -56,7 +56,9 @@ export class CarInfoService {
             yearOfManufacture: car_details.yearOfManufacture,
             color: car_details.colour,
             motStatus: car_details.motStatus,
+            motExpiryDate: car_details.motExpiryDate,
             fuelType: car_details.fuelType,
+            engineCapacity: car_details.engineCapacity,
 
             // form data
             postcode: formData.postcode,
@@ -66,7 +68,6 @@ export class CarInfoService {
             phoneNumber: formData.phoneNumber,
             carImage: formData.carImage,
             tag: tag,
-
             uniqueId: uniqueId // add unique id to the database entry
             
           };

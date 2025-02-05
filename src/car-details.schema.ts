@@ -26,6 +26,12 @@ export class CarDetails {
   @Prop()
   fuelType: string;
 
+  @Prop()
+  engineCapacity: number;
+
+  @Prop()
+  motExpiryDate: string;
+
   // fields from user form
   @Prop({ required: true })
   postcode: string;
@@ -36,14 +42,14 @@ export class CarDetails {
   @Prop()
   longitude: string;
 
-  @Prop()
-  problem?: string;
+  @Prop({default: 'N/A'})
+  problem: string;
 
   @Prop({ required: true })
   phoneNumber: string;
 
-  @Prop()
-  carImage?: string;
+  @Prop({default: 'N/A'})
+  carImage: string;
 
   @Prop({ required: true, enum: ['scrape', 'salvage'] })
   tag: string;
