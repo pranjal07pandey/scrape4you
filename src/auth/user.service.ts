@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { ConsoleLogger, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User } from './schemas/user.schema';
+
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,25 @@ export class UserService {
     });
 
     return user.save();
+  }
+
+  async updateUser(userId: string, updateData: any): Promise<User> {
+
+    // Add the current date to `date_updated`
+    updateData.date_updated = new Date();
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(userId, updateData, { new: true }) // `new: true` returns the updated document
+      .exec();
+
+      console.log('updated user: ', updatedUser);
+
+      if (!updatedUser) {
+        throw new NotFoundException('User not found');
+      }
+  
+      return updatedUser;
+
   }
 
   // Find User by Email

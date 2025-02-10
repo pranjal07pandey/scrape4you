@@ -27,6 +27,10 @@ export class User extends Document {
 
   @Prop({ default: now })
   date_updated: Date;
+
+  @Prop({default: 'https://salvage-motors.s3.eu-west-2.amazonaws.com/default_avatar.png'})
+  profile_image: string;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

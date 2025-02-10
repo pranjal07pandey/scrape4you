@@ -18,8 +18,6 @@ export class AuthService {
         throw new UnauthorizedException('Password is required');
       }
 
-    console.log('Received userData:', userData);
-
     const existingUser = await this.userService.findByEmail(userData.email);
     if (existingUser) {
       throw new UnauthorizedException('Email already exists');
@@ -47,8 +45,12 @@ export class AuthService {
   }
 
   // Validate User for JWT Strategy
-  async validateUser(userId: string): Promise<User | null> {
-    return this.userService.findById(userId);
+  async validateUser(userId: string): Promise<any> {
+    const user =  this.userService.findById(userId);
+    if (!user){
+      return null;
+    }
+    return user;
   }
 
 

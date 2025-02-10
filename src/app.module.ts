@@ -38,7 +38,7 @@ import { S3Service } from './car-info/upload-image';
     
     JwtModule.register({
       secret: process.env.JWT_SECRET, // Make sure this is correct
-      signOptions: { expiresIn: '1h' }, // You can adjust the expiration time
+      signOptions: { expiresIn: '90d' }, // You can adjust the expiration time
     }),
 
     AuthModule, // Auth module handles registration and login

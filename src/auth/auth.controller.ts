@@ -1,7 +1,10 @@
-import { Controller, Post, Get, Body, BadRequestException, Patch, Param, HttpStatus, HttpException, Put, Delete} from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, Patch, Param, HttpStatus, HttpException, Put, UseGuards} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
-
+import { Request } from 'express';
+import { AuthGuard } from '@nestjs/passport';
+import { User } from './user.decorator'; // Import the custom interface
+import { first } from 'rxjs';
 @Controller('auth')
 export class AuthController {
     constructor(
@@ -20,4 +23,40 @@ export class AuthController {
         const user = await this.authService.login(body.email, body.password);
         return user;
       }
+
+      @Get('get-user-details')
+      @UseGuards(AuthGuard('jwt'))
+      async getProfile(@User() user: any){
+        // return userId;
+        return{
+          userId: user._id,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          phone_number: user.phone,
+          profile_image: user.profile_image
+
+        }
+
+      }
+
+      @Put('update-user-profile')
+      @UseGuards(AuthGuard('jwt'))
+      async updateProfile(@User() user: any, @Body() body: any){
+        const userId = user._id;
+        const updatedUser = await this.userService.updateUser(userId, body);
+        return{
+          message: 'Profile updated successfully',
+          user:{
+            email: updatedUser.email,
+            first_name: updatedUser.first_name,
+            last_name: updatedUser.last_name,
+            phone_number: updatedUser.phone,
+            profile_image: updatedUser.profile_image
+          }
+        }
+
+
+      }
+
 }
