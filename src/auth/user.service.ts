@@ -25,14 +25,24 @@ export class UserService {
 
   async updateUser(userId: string, updateData: any): Promise<User> {
 
+    // Extract the password field (if it exists)
+  const { password, ...rest } = updateData;
+
+    // If the password is provided, hash it before updating
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateData.password = hashedPassword;
+    } else {
+      // If the password is not provided, remove it from the update data
+      delete updateData.password;
+    }
+
     // Add the current date to `date_updated`
     updateData.date_updated = new Date();
 
     const updatedUser = await this.userModel
       .findByIdAndUpdate(userId, updateData, { new: true }) // `new: true` returns the updated document
       .exec();
-
-      console.log('updated user: ', updatedUser);
 
       if (!updatedUser) {
         throw new NotFoundException('User not found');
