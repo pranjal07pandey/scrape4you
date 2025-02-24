@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { now } from 'mongoose';
+import { Types } from 'mongoose';
 
 @Schema()
 export class User extends Document {
@@ -30,6 +31,9 @@ export class User extends Document {
 
   @Prop({default: 'https://salvage-motors.s3.eu-west-2.amazonaws.com/default_avatar.png'})
   profile_image: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'CarDetails' }], default: [] })
+  favorites: Types.ObjectId[];
 
 }
 

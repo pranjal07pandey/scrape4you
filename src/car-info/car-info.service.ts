@@ -31,11 +31,27 @@ export class CarInfoService {
           //Fetch latitude and longitude from postcode
           let latitude = null;
           let longitude = null;
+          let country = null;
+          let region = null;
+          let parliamentary_constituency = null;
+          let admin_district = null;
+          let parish = null;
+          let full_location = ""
+
 
           try{
             const locationResponse = await axios.get(`${this.POSTCODE_API_URL}/${encodeURIComponent(formData.postcode)}`);
             latitude = locationResponse.data.result.latitude;
             longitude = locationResponse.data.result.longitude;
+            country = locationResponse.data.result.country;
+            region = locationResponse.data.result.region;
+            parliamentary_constituency = locationResponse.data.result.parliamentary_constituency;
+            admin_district = locationResponse.data.result.admin_district;
+            parish = locationResponse.data.result.parish;
+
+            full_location = parish +", "+ admin_district +", "+ parliamentary_constituency +", "+ region +", "+ country
+
+
           }catch(error){
             console.error("Failed to fetch coordinates:", error.message);
             throw new HttpException(
@@ -64,6 +80,7 @@ export class CarInfoService {
             postcode: formData.postcode,
             latitude,
             longitude,
+            fullAddress: full_location, 
             problem: formData.problem,
             phoneNumber: formData.phoneNumber,
             carImage: formData.carImage,

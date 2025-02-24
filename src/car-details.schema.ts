@@ -42,6 +42,9 @@ export class CarDetails {
   @Prop()
   longitude: string;
 
+  @Prop()
+  fullAddress: string;
+
   @Prop({default: 'N/A'})
   problem: string;
 

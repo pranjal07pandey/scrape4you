@@ -4,7 +4,6 @@ import { UserService } from './user.service';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.decorator'; // Import the custom interface
-import { first } from 'rxjs';
 @Controller('auth')
 export class AuthController {
     constructor(
@@ -55,8 +54,21 @@ export class AuthController {
             profile_image: updatedUser.profile_image
           }
         }
+      }
 
+      @Post('add-to-saved/:carId')
+      @UseGuards(AuthGuard('jwt'))
+      async toggleFavorite(@User() user:any, @Param("carId") carId: string){
+        const userId = user._id;
+        return this.userService.toggleFavorite(userId, carId);
 
+      }
+
+      @Get('list-all-saved')
+      @UseGuards(AuthGuard('jwt'))
+      async getFavorites(@User() user: any){
+        const userId = user._id;
+        return this.userService.getFavorites(userId);
       }
 
 }
