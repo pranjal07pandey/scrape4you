@@ -61,7 +61,7 @@ export class CarInfoService {
           }
 
           // Assign "scrape" or "salvage" tag with 50-50 probability
-          const tag = Math.random() < 0.5 ? "scrape" : "salvage";
+          const tag = Math.random() < 0.5 ? "scrap" : "salvage";
 
           // Store car details in the database
           const uniqueId = uuidv4();
