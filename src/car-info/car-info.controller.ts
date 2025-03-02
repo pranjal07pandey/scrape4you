@@ -5,6 +5,9 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express'; // Import Express types
 import { S3Service } from './upload-image'; // Import the S3 service
+import { CarDetailsService } from 'src/car-details.service';
+import { AuthGuard } from '@nestjs/passport';
+import { User } from 'src/auth/user.decorator';
 
 @Controller('car')
 export class CarInfoController {
@@ -12,6 +15,7 @@ export class CarInfoController {
   private twilioClient: Twilio;
   constructor(
     private readonly carInfoService: CarInfoService,
+    private readonly carDetailsService: CarDetailsService,
     private readonly s3Service: S3Service) {
     this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
@@ -89,10 +93,16 @@ export class CarInfoController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('get-all-listing')
+  @UseGuards(AuthGuard('jwt'))
   async getAllListings(){
     return this.carInfoService.getAllListing()
+  }
+
+  @Get('get-single-listing/:_id')
+  @UseGuards(AuthGuard('jwt'))
+  async getSingleListing(@Param('_id') id: string) {
+    return this.carInfoService.getSingleListing(id);
   }
 
   @Get('get-data/:uniqueId')
@@ -138,6 +148,20 @@ export class CarInfoController {
       
     }
     
+  }
+
+  // update the views logic
+
+  @Post(':_id/view')
+  @UseGuards(AuthGuard('jwt'))
+  async viewCar(@User() user:any, @Param('_id') carId: string) {
+    const userId = user._id
+    return this.carDetailsService.viewCar(userId, carId);
+  }
+
+  @Get(':_id/views')
+  async getTotalViews(@Param('_id') carId: string) {
+    return this.carDetailsService.getTotalViews(carId);
   }
 
 

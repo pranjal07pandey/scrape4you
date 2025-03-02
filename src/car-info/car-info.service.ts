@@ -115,6 +115,10 @@ export class CarInfoService {
       return allListing;
     }
 
+    async getSingleListing(id: string): Promise<any>{
+      return await this.carDetailsService.findCarDetail(id);
+    }
+
     async getFormByUniqueId(uniqueId: string): Promise<any>{
       return await this.carDetailsService.getFormByUniqueId(uniqueId);
     }

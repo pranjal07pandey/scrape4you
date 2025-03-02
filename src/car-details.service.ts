@@ -1,6 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CarDetails, CarDetailsDocument } from './car-details.schema';
+import { User } from './auth/schemas/user.schema';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class CarDetailsService {
   constructor(
     @InjectModel(CarDetails.name)
     private carDetailsModel: Model<CarDetailsDocument>,
+    @InjectModel(User.name) private userModel: Model<User>
   ) {}
 
   async create(details: Partial<CarDetails>): Promise<CarDetails> {
@@ -19,8 +21,36 @@ export class CarDetailsService {
     return this.carDetailsModel.find().exec();
   }
 
-  async findOne(registrationNumber: string): Promise<CarDetails | null> {
-    return this.carDetailsModel.findOne({ registrationNumber }).exec();
+
+  async findCarDetail(_id: string): Promise<CarDetails | null> {
+    return this.carDetailsModel.findById({ _id }).exec();
+  }
+
+  //update views
+  async viewCar(userId: string, _id: string) {
+    const car = await this.carDetailsModel.findById(_id);
+    if (!car) {
+      throw new NotFoundException('Car not found');
+    }
+
+    const userObjectId = new Types.ObjectId(userId);
+
+    // Check if user already viewed the car
+    if (!car.views.includes(userObjectId)) {
+      car.views.push(userObjectId);
+      await car.save();
+    }
+
+    return { message: 'View recorded', totalViews: car.views.length };
+  }
+
+  async getTotalViews(_id: string) {
+    const car = await this.carDetailsModel.findById(_id);
+    if (!car) {
+      throw new NotFoundException('Car not found');
+    }
+
+    return { totalViews: car.views.length };
   }
 
   async markAsSold(id: string): Promise<CarDetails> {

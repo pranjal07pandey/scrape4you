@@ -1,5 +1,6 @@
+import { Type } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type CarDetailsDocument = CarDetails & Document;
 
@@ -65,6 +66,9 @@ export class CarDetails {
 
   @Prop({required: true, unique:true})
   uniqueId: string;
+
+  @Prop({type: [{type: Types.ObjectId, ref: 'User'}], default: []})
+  views: Types.ObjectId[];
 
 }
 
