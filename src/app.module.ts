@@ -21,6 +21,7 @@ import { AuthService } from './auth/auth.service';
 import { UserService } from './auth/user.service';
 import { JwtModule } from '@nestjs/jwt';  // Import JwtModule (if using in AppModule)
 import { S3Service } from './car-info/upload-image';
+import { StripeModule } from './stripe/stripe.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -42,7 +43,7 @@ import { S3Service } from './car-info/upload-image';
     }),
 
     AuthModule, // Auth module handles registration and login
-
+    StripeModule,
   ],
   controllers: [AppController, CarInfoController, AuthController],
   providers: [AppService, CarInfoService, CarDetailsService, AuthService, UserService, S3Service],

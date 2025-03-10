@@ -55,6 +55,9 @@ export class CarDetails {
   @Prop({default: 'N/A'})
   carImage: string;
 
+  @Prop()
+  displayImage: string;
+
   @Prop({ required: true, enum: ['scrap', 'salvage'] })
   tag: string;
 

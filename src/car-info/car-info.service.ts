@@ -8,6 +8,7 @@ export class CarInfoService {
     private readonly apiUrl = process.env.DVLA_MAIN_URL;
     private readonly apiKey = process.env.DVLA_MAIN_KEY;
     private readonly POSTCODE_API_URL = 'https://api.postcodes.io/postcodes';
+    private readonly AWS_IMAGE_URL = 'https://car-image-database.s3.eu-west-2.amazonaws.com/'
 
     constructor(private readonly carDetailsService: CarDetailsService) {}
 
@@ -63,6 +64,16 @@ export class CarInfoService {
           // Assign "scrape" or "salvage" tag with 50-50 probability
           const tag = Math.random() < 0.5 ? "scrap" : "salvage";
 
+          //top common cars
+          const topCommon = ['VOLKSWAGEN', 'VOLVO', 'BMW', 'SUZUKI', 'TESLA', 'TOYOTA', 'VAUXHALL', 
+            'NISSAN', 'MINI', 'MERCEDES-BENZ', 'JEEP', 'JAGUAR', 'HONDA', 'HYUNDAI', 'KIA', 'FORD', 'FIAT',
+          'CITRON', 'LEXUS', 'JAGUAR', 'MITSUBISHI']
+
+          
+
+          // Save the images based on car make
+          const displayImageURL = this.AWS_IMAGE_URL + car_details.make + '/img0.jpg'
+
           // Store car details in the database
           const uniqueId = uuidv4();
           const carData = {
@@ -84,6 +95,7 @@ export class CarInfoService {
             problem: formData.problem,
             phoneNumber: formData.phoneNumber,
             carImage: formData.carImage,
+            displayImage: displayImageURL,
             tag: tag,
             uniqueId: uniqueId // add unique id to the database entry
             
