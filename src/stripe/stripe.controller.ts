@@ -20,17 +20,22 @@ import {
     }
   
     // Create a subscription
-    @Post('create-subscription')
+    @Post('create-customer-and-subscription')
     async createSubscription(@Body() body: { email: string; priceId: string }) {
       const { email, priceId } = body;
   
-      // Create a customer
-      const customer = await this.stripeService.createCustomer(email);
-  
-      // Create a subscription
-      const subscription = await this.stripeService.createSubscription(customer.id, priceId);
-  
-      return { subscription };
+      try{
+        // Create a customer
+        const customer = await this.stripeService.createCustomer(email);
+
+        // Step 2: Create a subscription for the customer
+        return await this.stripeService.createSubscription(customer.id, priceId);
+
+      }
+      catch (err) {
+        throw new Error(err.message);
+      }
+
     }
   
   }

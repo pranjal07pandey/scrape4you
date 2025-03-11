@@ -64,15 +64,11 @@ export class CarInfoService {
           // Assign "scrape" or "salvage" tag with 50-50 probability
           const tag = Math.random() < 0.5 ? "scrap" : "salvage";
 
-          //top common cars
-          const topCommon = ['VOLKSWAGEN', 'VOLVO', 'BMW', 'SUZUKI', 'TESLA', 'TOYOTA', 'VAUXHALL', 
-            'NISSAN', 'MINI', 'MERCEDES-BENZ', 'JEEP', 'JAGUAR', 'HONDA', 'HYUNDAI', 'KIA', 'FORD', 'FIAT',
-          'CITRON', 'LEXUS', 'JAGUAR', 'MITSUBISHI']
-
-          
+          let randomNumber = Math.random() * 3
+          randomNumber = Math.floor(randomNumber)
 
           // Save the images based on car make
-          const displayImageURL = this.AWS_IMAGE_URL + car_details.make + '/img0.jpg'
+          const displayImageURL = this.AWS_IMAGE_URL + car_details.make + `/img${randomNumber}.png`
 
           // Store car details in the database
           const uniqueId = uuidv4();

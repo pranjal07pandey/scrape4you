@@ -29,11 +29,25 @@ export class StripeService {
 
   // Create a subscription
   async createSubscription(customerId: string, priceId: string) {
-    return this.stripe.subscriptions.create({
-      customer: customerId,
-      items: [{ price: priceId }],
-      expand: ['latest_invoice.payment_intent'],
-    });
-  }
+      const subscription =  await this.stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+        expand: ['latest_invoice.payment_intent'],
+        payment_behavior: 'default_incomplete', // For handling payment setup
+      });
+
+      // Type assertion to ensure `latest_invoice` is an expanded Invoice object
+      const latestInvoice = subscription.latest_invoice as Stripe.Invoice & {
+        payment_intent: Stripe.PaymentIntent;
+      };
+
+      return {
+        customerId: customerId,
+        subscriptionId: subscription.id,
+        clientSecret: latestInvoice.payment_intent.client_secret,
+      };
+
+      
+    }
 
 }
