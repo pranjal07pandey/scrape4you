@@ -4,10 +4,9 @@ import {Stripe} from 'stripe';
 @Injectable()
 export class StripeService {
   private stripe: Stripe;
-
   constructor() {
     // Initialize Stripe with your secret key
-    this.stripe = new Stripe('sk_test_51GzlwoDnmorUxCln6DMp4mwAKJF6se2kCMzFshXd7TWy2ii4UHZKFsSkXKTQSmo2AAJr1EGoTch3DSZhjRXY6iZq00CPDHzDjJ', {
+    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: null, // Use the latest API version
     });
   }
@@ -49,5 +48,23 @@ export class StripeService {
 
       
     }
+
+    async createEphemeralKey(customerId: string) {
+      return this.stripe.ephemeralKeys.create(
+        { customer: customerId },
+        { apiVersion: '2023-08-16'},
+      );
+    }
+
+    async createPaymentIntent(amount: number, currency: string) {
+      return this.stripe.paymentIntents.create({
+        amount,
+        currency,
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+    }  
+  
 
 }

@@ -37,5 +37,29 @@ import {
       }
 
     }
+
+    @Post('payment/sheet')
+    async createPaymentSheet(@Body() body: {email: string}) {
+      try {
+
+        const {email} = body;
+        
+        // Step 1: Create a customer
+        const customer = await this.stripeService.createCustomer(email);
   
+        // Step 2: Create an ephemeral key
+        const ephemeralKey = await this.stripeService.createEphemeralKey(customer.id);
+  
+        // Step 3: Create a PaymentIntent
+        const paymentIntent = await this.stripeService.createPaymentIntent(499, 'usd'); // $4.99
+  
+        return {
+          paymentIntent: paymentIntent.client_secret,
+          ephemeralKey: ephemeralKey.secret,
+          customer: customer.id,
+        };
+      } catch (error) {
+        throw new Error(`Failed to create payment sheet: ${error.message}`);
   }
+}   
+}
