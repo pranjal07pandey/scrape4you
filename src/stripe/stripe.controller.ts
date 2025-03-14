@@ -62,4 +62,13 @@ import {
         throw new Error(`Failed to create payment sheet: ${error.message}`);
   }
 }   
+
+    @Get('keys')
+    async getStripKeys(){
+      return {
+        publishedKey: process.env.STRIPE_PUBLIC_KEY,
+        merchantIdentifier: '',
+        urlScheme: ''
+      }
+    }
 }
