@@ -38,6 +38,19 @@ import {
 
     }
 
+    // new apis
+    @Post('cancel-subscription')
+    async cancelSubscription(@Body() body: {subscriptionID: string}){
+      const {subscriptionID} = body;
+      return await this.stripeService.cancelSubscription(subscriptionID);
+    }
+
+    @Post('check-subscription')
+    async checkSubscription(@Body() body: {customerID: string}){
+      const {customerID} = body;
+      return await this.stripeService.checkSubscription(customerID);
+    }
+
     @Post('payment/sheet')
     async createPaymentSheet(@Body() body: {email: string}) {
       try {

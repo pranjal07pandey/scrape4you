@@ -49,6 +49,26 @@ export class StripeService {
       
     }
 
+  
+  // cancel a subscription
+    async cancelSubscription(subscriptionId: string){
+      try{
+        return await this.stripe.subscriptions.cancel(subscriptionId);
+      }
+      catch(error){
+        throw new Error(error.message);
+      }
+    }
+
+    //  check subscription
+    async checkSubscription(customerID: string){
+      try {
+        return await this.stripe.subscriptions.list({customer: customerID, status: 'active'})
+      } catch (error) {
+        throw new Error(error.message);
+      }
+    }
+
     async createEphemeralKey(customerId: string) {
       return this.stripe.ephemeralKeys.create(
         { customer: customerId },
