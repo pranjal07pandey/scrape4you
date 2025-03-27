@@ -35,6 +35,9 @@ export class User extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'CarDetails' }], default: [] })
   favorites: Types.ObjectId[];
 
+  @Prop({ type: [String], required: true, default: [] })
+  active_devices: string[];
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

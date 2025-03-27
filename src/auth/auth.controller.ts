@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Req, Patch, Param, HttpStatus, HttpException, Put, UseGuards} from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, Patch, Param, HttpStatus, HttpException, Put, UseGuards, BadRequestException} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 import { Request } from 'express';
@@ -33,8 +33,9 @@ export class AuthController {
           first_name: user.first_name,
           last_name: user.last_name,
           phone_number: user.phone,
-          profile_image: user.profile_image
-
+          profile_image: user.profile_image,
+          is_subscribed: user.is_subscribed,
+          active_devices: user.active_devices
         }
 
       }
@@ -55,6 +56,25 @@ export class AuthController {
           }
         }
       }
+
+      @Put('update-subscription')
+      @UseGuards(AuthGuard('jwt'))
+      async updateSubscription(@User() user:any,  @Body() body: any){
+        const subscriptionType = body.subscription; 
+        const userId = user._id;
+
+        if (!subscriptionType) {
+          throw new BadRequestException('Subscription type is required');
+      }
+
+        const updatedUser = await this.userService.updateSubs(userId, { is_subscribed: subscriptionType });
+
+        return{
+          message: 'Subscription added successfully',
+          subscriptionType: updatedUser.is_subscribed
+        }
+      }
+
 
       @Post('add-to-saved/:carId')
       @UseGuards(AuthGuard('jwt'))

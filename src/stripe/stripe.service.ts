@@ -61,9 +61,37 @@ export class StripeService {
     }
 
     //  check subscription
-    async checkSubscription(customerID: string){
+    async checkSubscription(email: string){
       try {
-        return await this.stripe.subscriptions.list({customer: customerID, status: 'active'})
+        // return await this.stripe.subscriptions.list({customer: customerID, status: 'active'})
+        // 1. Find customer in Stripe
+          const customer = await this.stripe.customers.list({
+            email: email,
+            limit: 1
+          });
+
+          // console.log("Customer is------>", customer);
+
+          if (customer.data.length === 0) {
+            return ({ hasSubscription: false });
+          }
+
+          // 2. Check for active subscriptions
+          const subscriptions = await this.stripe.subscriptions.list({
+            customer: customer.data[0].id,
+            status: 'active',
+            limit: 1
+          });
+
+          // 3. Return subscription status
+          const hasActiveSubscription = subscriptions.data.length > 0;
+          return {
+            hasSubscription: hasActiveSubscription,
+            status: hasActiveSubscription ? subscriptions.data[0].status : null,
+            currentPeriodEnd: hasActiveSubscription ? subscriptions.data[0].current_period_end : null,
+            plan: hasActiveSubscription ? subscriptions.data[0].items.data[0].plan : null
+          };
+
       } catch (error) {
         throw new Error(error.message);
       }

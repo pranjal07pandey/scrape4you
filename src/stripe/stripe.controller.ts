@@ -46,9 +46,9 @@ import {
     }
 
     @Post('check-subscription')
-    async checkSubscription(@Body() body: {customerID: string}){
-      const {customerID} = body;
-      return await this.stripeService.checkSubscription(customerID);
+    async checkSubscription(@Body() body: {email: string}){
+      const {email} = body;
+      return await this.stripeService.checkSubscription(email);
     }
 
     @Post('payment/sheet')

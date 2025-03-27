@@ -1,6 +1,6 @@
 import { ConsoleLogger, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User } from './schemas/user.schema';
 import { CarDetails } from 'src/car-details.schema';
@@ -53,6 +53,27 @@ export class UserService {
       }
   
       return updatedUser;
+
+  }
+
+  //update subscription
+  async updateSubs(userId: string, updateData: Partial<User>): Promise<User> {
+    // Ensure password is not accidentally updated
+      if ('password' in updateData) {
+        delete updateData.password;
+    }
+    // Automatically update `date_updated`
+    updateData.date_updated = new Date();
+
+    const updatedUser = await this.userModel
+        .findByIdAndUpdate(userId, { $set: updateData }, { new: true }) // `$set` ensures only the provided fields are updated
+        .exec();
+
+    if (!updatedUser) {
+        throw new NotFoundException('User not found');
+    }
+
+    return updatedUser;
 
   }
 
