@@ -63,34 +63,84 @@ export class StripeService {
     //  check subscription
     async checkSubscription(email: string){
       try {
-        // return await this.stripe.subscriptions.list({customer: customerID, status: 'active'})
         // 1. Find customer in Stripe
-          const customer = await this.stripe.customers.list({
-            email: email,
-            limit: 1
-          });
-
-          // console.log("Customer is------>", customer);
-
-          if (customer.data.length === 0) {
+        const customers = await this.stripe.customers.list({ email, limit: 100 });
+          if (customers.data.length === 0) {
             return ({ hasSubscription: false });
           }
 
           // 2. Check for active subscriptions
-          const subscriptions = await this.stripe.subscriptions.list({
-            customer: customer.data[0].id,
-            status: 'active',
-            limit: 1
-          });
+          const activeSubscriptions = [];
+          for (const customer of customers.data){
+            const subscriptions = await this.stripe.subscriptions.list({
+              customer: customer.id,
+              status: 'active',
+              limit: 1
+            });
+          
+          if (subscriptions.data.length > 0) {
+            activeSubscriptions.push(...subscriptions.data);
+          }
+        }
 
-          // 3. Return subscription status
-          const hasActiveSubscription = subscriptions.data.length > 0;
+
+        // 3. Return early if no active subscriptions
+        if (activeSubscriptions.length === 0) {
+          return { hasSubscription: false };
+        }
+
+      
+          const subscriptionTypes = [
+            {
+              id: 'price_1R15A1DnmorUxCln7W0DslGy',
+              name: 'Salvage Monthly',
+              price: 170,
+              interval: 'month', // Added for clarity
+            },
+            {
+              id: 'price_1R57DZDnmorUxClnRG48rfKZ',
+              name: 'Salvage Weekly',
+              price: 50,
+              interval: 'week',
+            },
+            {
+              id: 'price_1R573DDnmorUxClnp4X4Imki',
+              name: 'Scrap Monthly',
+              price: 170,
+              interval: 'month',
+            },
+            {
+              id: 'price_1R57CnDnmorUxClnS97UhVMT',
+              name: 'Scrap Weekly',
+              price: 50,
+              interval: 'week',
+            },
+          ]
+
+          // 5. Map subscriptions to your custom plans
+          const subscriptions = activeSubscriptions.map((sub) => {
+          const planId = sub.plan.id;
+          const matchedPlan = subscriptionTypes.find((plan) => plan.id === planId);
+
+              return {
+                status: sub.status,
+                currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
+                plan: matchedPlan || { 
+                  id: planId, 
+                  name: 'Unknown Plan', 
+                  price: 0, 
+                  interval: 'N/A' 
+                }, // Fallback if plan not in your list
+              };
+            });
+
+
+          // 6. Final response (frontend-friendly)
           return {
-            hasSubscription: hasActiveSubscription,
-            status: hasActiveSubscription ? subscriptions.data[0].status : null,
-            currentPeriodEnd: hasActiveSubscription ? subscriptions.data[0].current_period_end : null,
-            plan: hasActiveSubscription ? subscriptions.data[0].items.data[0].plan : null
-          };
+            hasSubscription: true,
+            subscriptions, // Array of all active subscriptions with clean plan data
+        }
+        
 
       } catch (error) {
         throw new Error(error.message);
