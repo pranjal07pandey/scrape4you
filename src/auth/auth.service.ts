@@ -26,7 +26,7 @@ export class AuthService {
   }
 
   // Login
-  async login(email: string, password: string): Promise<{ access_token: string; message: string }> {
+  async login(email: string, password: string, deviceId: string): Promise<{ access_token: string; message: string, active_devices:Object}> {
     const user = await this.userService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid Email or password');
@@ -37,10 +37,29 @@ export class AuthService {
       throw new UnauthorizedException('Invalid Email or password');
     }
 
+    // Check subscription type and enforce device limits
+    if (user.is_subscribed === 'scrap' || user.is_subscribed === 'salvage' || user.is_subscribed === 'None'){
+      // Only 1 device allowed, remove previous one
+      user.active_devices = [deviceId];
+
+    }else if (user.is_subscribed === 'corporate'){
+      // Allow up to 2 devices, remove the oldest if exceeding
+      if (!user.active_devices.includes(deviceId)) {
+        if (user.active_devices.length >= 2) {
+            user.active_devices.shift(); // Remove the oldest device
+        }
+        user.active_devices.push(deviceId);
+      }
+    }
+
+    // Save updated user data
+    await this.userService.updateUser(user._id.toString(), { active_devices: user.active_devices });
+
     const payload = { sub: user._id, email: user.email };
     const access_token = this.jwtService.sign(payload);
 
-    return { access_token, message: "Login successful" };
+    return {message: "Login successful", access_token, active_devices: user.active_devices };
+
 
   }
 

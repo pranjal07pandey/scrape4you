@@ -19,7 +19,13 @@ export class AuthController {
 
       @Post('login')
       async login(@Body() body: any) {
-        const user = await this.authService.login(body.email, body.password);
+        const {email, password, deviceId} = body;
+
+        if (!deviceId){
+          throw new BadRequestException('Device Id is required')
+        }
+        
+        const user = await this.authService.login(email, password, deviceId);
         return user;
       }
 
