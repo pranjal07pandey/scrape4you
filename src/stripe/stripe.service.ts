@@ -115,6 +115,18 @@ export class StripeService {
               price: 50,
               interval: 'week',
             },
+            {
+              id: 'price_1R9a3xDnmorUxClnuwyFYx1B',
+              name: 'Corporate Salvage',
+              price: 300,
+              interval: 'month',
+            },
+            {
+              id: 'price_1R9a2eDnmorUxCln8q94c9Xg',
+              name: 'Corporate Salvage',
+              price: 300,
+              interval: 'month',
+            }
           ]
 
           // 5. Map subscriptions to your custom plans

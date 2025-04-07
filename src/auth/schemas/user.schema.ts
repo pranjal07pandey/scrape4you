@@ -38,6 +38,16 @@ export class User extends Document {
   @Prop({ type: [String], required: true, default: [] })
   active_devices: string[];
 
+  // New: Track login attempts for cooldown enforcement
+  @Prop({
+    type: [{
+      timestamp: { type: Date, required: true },
+      deviceId: { type: String, required: true },
+    }],
+    default: [],
+  })
+  login_attempts: Array<{ timestamp: Date; deviceId: string }>;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

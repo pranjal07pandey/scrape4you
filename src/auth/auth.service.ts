@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException  } from '@nestjs/common';
+import { Injectable, UnauthorizedException, HttpException  } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user.service';
 import { User } from './schemas/user.schema';
@@ -37,12 +37,36 @@ export class AuthService {
       throw new UnauthorizedException('Invalid Email or password');
     }
 
-    // Check subscription type and enforce device limits
-    if (user.is_subscribed === 'scrap' || user.is_subscribed === 'salvage' || user.is_subscribed === 'None'){
-      // Only 1 device allowed, remove previous one
-      user.active_devices = [deviceId];
+    const now = new Date();
+    const COOLDOWN_MINUTES = 15;
+    const NORMAL_LOGIN_LIMIT = 2;
+    const CORPORATE_LOGIN_LIMIT = 3;
 
-    }else if (user.is_subscribed === 'corporate'){
+    const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
+
+    const cooldownWindow = COOLDOWN_MINUTES * 60 * 1000;
+
+    user.login_attempts = user.login_attempts.filter(
+      attempt => now.getTime() - attempt.timestamp.getTime() <= cooldownWindow
+    );
+
+    // Step 2: Check if the user has hit the login limit
+    const loginLimit = isCorporate ? CORPORATE_LOGIN_LIMIT : NORMAL_LOGIN_LIMIT;
+
+    if (user.login_attempts.length >= loginLimit) {
+      // return Promise.reject(new Error(`Too many login attempts. Wait ${COOLDOWN_MINUTES} minutes before trying again`))
+      throw new HttpException(
+        `Too many login attempts. Wait ${COOLDOWN_MINUTES} minutes before trying again.`,
+        429, // 429 = Too Many Requests
+      );
+    }
+
+    // Step 3: Allow the login and record the attempt
+    user.login_attempts.push({ timestamp: now, deviceId });
+
+
+    // Check subscription type and enforce device limits
+    if (isCorporate){
       // Allow up to 2 devices, remove the oldest if exceeding
       if (!user.active_devices.includes(deviceId)) {
         if (user.active_devices.length >= 2) {
@@ -51,9 +75,13 @@ export class AuthService {
         user.active_devices.push(deviceId);
       }
     }
+    else{
+      // Only 1 device allowed for all the other cases, remove previous one
+      user.active_devices = [deviceId];
+    }
 
     // Save updated user data
-    await this.userService.updateUser(user._id.toString(), { active_devices: user.active_devices });
+    await this.userService.updateUser(user._id.toString(), { login_attempts: user.login_attempts, active_devices: user.active_devices });
 
     const payload = { sub: user._id, email: user.email };
     const access_token = this.jwtService.sign(payload);
