@@ -1,7 +1,6 @@
-import { Controller, Post, Get, Body, Req, Patch, Param, HttpStatus, HttpException, Put, UseGuards, BadRequestException} from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Put, UseGuards, BadRequestException, Delete} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
-import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.decorator'; // Import the custom interface
 @Controller('auth')
@@ -96,5 +95,16 @@ export class AuthController {
         const userId = user._id;
         return this.userService.getFavorites(userId);
       }
+
+      @Get('list-all-agents')
+      async listAgents(){
+        return this.userService.getAllAgents();
+      }
+
+      @Delete('delete-agent/:userId')
+      async deleteAgent(@Param('userId') userId:string){
+        return this.userService.deleteAgentById(userId);
+      }
+      
 
 }

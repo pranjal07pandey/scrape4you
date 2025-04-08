@@ -117,6 +117,27 @@ export class UserService {
     return { message: 'Favorite list updated', favorites: user.favorites };
   }
 
+  // get all users
+  async getAllAgents(){
+    const agents = await this.userModel.find();
+
+    if (!agents) throw new NotFoundException('No agents found..')
+    
+    return agents;
+
+  }
+
+  // delete an agent
+  async deleteAgentById(userId: string): Promise<{message: string}>{
+    const result = await this.userModel.deleteOne({ _id: userId }).exec();
+    if (result.deletedCount ===0){
+      throw new NotFoundException('User not found')
+    }
+
+    return {message: `User with id ${userId} deleted successfully.`}
+
+  }
+
 
   
 }
