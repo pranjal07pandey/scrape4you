@@ -45,60 +45,7 @@ import { publicDecrypt } from 'crypto';
         const customer = await this.stripeService.createCustomer(email);
 
         // Step 2: Create a subscription for the customer
-        const subscription = await this.stripeService.createSubscription(customer.id, priceId);
-
-        const subscriptionTypes = [
-          {
-            id: 'price_1R15A1DnmorUxCln7W0DslGy',
-            name: 'Salvage Monthly',
-            price: 170,
-            interval: 'month', // Added for clarity
-          },
-          {
-            id: 'price_1R57DZDnmorUxClnRG48rfKZ',
-            name: 'Salvage Weekly',
-            price: 50,
-            interval: 'week',
-          },
-          {
-            id: 'price_1R573DDnmorUxClnp4X4Imki',
-            name: 'Scrap Monthly',
-            price: 170,
-            interval: 'month',
-          },
-          {
-            id: 'price_1R57CnDnmorUxClnS97UhVMT',
-            name: 'Scrap Weekly',
-            price: 50,
-            interval: 'week',
-          },
-          {
-            id: 'price_1R9a3xDnmorUxClnuwyFYx1B',
-            name: 'Corporate Salvage',
-            price: 300,
-            interval: 'month',
-          },
-          {
-            id: 'price_1R9a2eDnmorUxCln8q94c9Xg',
-            name: 'Corporate Scrap',
-            price: 300,
-            interval: 'month',
-          }
-        ]
-
-            let purchasedSubscription:string = '';
-            if(subscription){
-              for (const subs of subscriptionTypes){
-                if(priceId === subs.id){
-                  purchasedSubscription = subs.name;
-                }
-            }
-          }
-
-          if (purchasedSubscription){
-            await this.userService.updateSubs(userId, { is_subscribed: purchasedSubscription });
-            return subscription;
-          }
+        return await this.stripeService.createSubscription(customer.id, priceId);
 
       }
       catch (err) {
@@ -109,9 +56,20 @@ import { publicDecrypt } from 'crypto';
 
     // new apis
     @Post('cancel-subscription')
-    async cancelSubscription(@Body() body: {subscriptionID: string}){
+    @UseGuards(AuthGuard('jwt'))
+    async cancelSubscription(@User() user:any, @Body() body: {subscriptionID: string}){
       const {subscriptionID} = body;
-      return await this.stripeService.cancelSubscription(subscriptionID);
+      const userId = user._id;
+      const purchasedSubscription = 'None';
+
+
+      const cancelledSubscription =  await this.stripeService.cancelSubscription(subscriptionID);
+
+      if(cancelledSubscription){
+        await this.userService.updateSubs(userId, { is_subscribed: purchasedSubscription });
+      }
+
+      return cancelledSubscription;
     }
 
     @Post('check-subscription')
