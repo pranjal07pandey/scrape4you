@@ -38,46 +38,51 @@ export class AuthService {
     }
 
     const now = new Date();
-    const COOLDOWN_MINUTES = 15;
+    const COOLDOWN_MINUTES = 1;
     const NORMAL_LOGIN_LIMIT = 2;
     const CORPORATE_LOGIN_LIMIT = 3;
+    const cooldownWindow = COOLDOWN_MINUTES * 60 * 1000;
 
     const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
-
-    const cooldownWindow = COOLDOWN_MINUTES * 60 * 1000;
+    const deviceLimit = isCorporate ? 2 : 1;
 
     user.login_attempts = user.login_attempts.filter(
       attempt => now.getTime() - attempt.timestamp.getTime() <= cooldownWindow
     );
 
-    // Step 2: Check if the user has hit the login limit
+    // Check if the user has hit the login limit
     const loginLimit = isCorporate ? CORPORATE_LOGIN_LIMIT : NORMAL_LOGIN_LIMIT;
 
-    if (user.login_attempts.length >= loginLimit) {
-      // return Promise.reject(new Error(`Too many login attempts. Wait ${COOLDOWN_MINUTES} minutes before trying again`))
-      throw new HttpException(
-        `Too many login attempts. Wait ${COOLDOWN_MINUTES} minutes before trying again.`,
-        429, // 429 = Too Many Requests
-      );
+    if (!user.active_devices.includes(deviceId)){
+      if (user.login_attempts.length >= loginLimit) {
+        throw new HttpException(
+          `Too many login attempts. Wait ${COOLDOWN_MINUTES} minutes before trying again.`,
+          429, // 429 = Too Many Requests
+        );
+      }
+
     }
 
-    // Step 3: Allow the login and record the attempt
+    // Allow the login and record the attempt
     user.login_attempts.push({ timestamp: now, deviceId });
 
-
-    // Check subscription type and enforce device limits
-    if (isCorporate){
-      // Allow up to 2 devices, remove the oldest if exceeding
-      if (!user.active_devices.includes(deviceId)) {
-        if (user.active_devices.length >= 2) {
-            user.active_devices.shift(); // Remove the oldest device
+    // Device Management
+    if (!user.active_devices.includes(deviceId)){
+      if (user.active_devices.length >= deviceLimit){
+        if (isCorporate){
+          // For corporate, only remove the oldest device, FIFO
+          user.active_devices.shift() // removes first element
+          user.active_devices.push(deviceId); //Add new device at end
         }
+        else{
+          //For normal accounts, replace all existing devices
+          user.active_devices = [deviceId];
+        }
+      }
+      else{
+        // Under limit - just add new device
         user.active_devices.push(deviceId);
       }
-    }
-    else{
-      // Only 1 device allowed for all the other cases, remove previous one
-      user.active_devices = [deviceId];
     }
 
     // Save updated user data

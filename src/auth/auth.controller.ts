@@ -1,8 +1,10 @@
-import { Controller, Post, Get, Body, Param, Put, UseGuards, BadRequestException, Delete} from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Put, UseGuards, BadRequestException, Delete, UnauthorizedException} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.decorator'; // Import the custom interface
+import * as bcrypt from 'bcrypt';
+
 @Controller('auth')
 export class AuthController {
     constructor(
@@ -14,6 +16,45 @@ export class AuthController {
       async register(@Body() body: any) {
         const user = await this.authService.register(body);
         return {"message": "Registration Successful", user};
+      }
+
+      @Post('attemptLogin')
+      async attemptLogin(@Body() body: { email: string, password: string, deviceId: string}){
+        const {email, password, deviceId} = body;
+
+        const user = await this.userService.findByEmail(email);
+
+        if (!user){
+          throw new UnauthorizedException('Invalid Email or password')
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+          throw new UnauthorizedException('Invalid Email or password');
+        }
+
+        const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
+        const deviceLimit = isCorporate ? 2 : 1;
+
+        if (user.active_devices.includes(deviceId)) {
+          // Device is already registered, no confirmation needed
+          return { requires_confirmation: false };
+        }
+
+        if (user.active_devices.length >= deviceLimit) {
+          // Needs confirmation to force logout others
+          return {
+            requires_confirmation: true,
+            message: isCorporate 
+              ? 'There are already 2 devices logged in. Continue will log out your oldest device.'
+              : 'There is already a device logged in. Continue will log it out.'
+          };
+        }
+
+        // No confirmation needed
+        return { requires_confirmation: false };
+        
       }
 
       @Post('login')
