@@ -135,6 +135,7 @@ export class StripeService {
           const matchedPlan = subscriptionTypes.find((plan) => plan.id === planId);
 
               return {
+                subscriptionId: sub.id,
                 status: sub.status,
                 currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
                 plan: matchedPlan || { 
