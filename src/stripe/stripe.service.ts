@@ -11,6 +11,11 @@ export class StripeService {
     });
   }
 
+  // Web hook changes
+  constructEvent(payload: Buffer, signature: string, secret: string) {
+    return this.stripe.webhooks.constructEvent(payload, signature, secret);
+  }
+
   // Fetch all products with their prices
   async getProducts() {
     const products = await this.stripe.products.list({
