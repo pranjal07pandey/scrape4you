@@ -16,6 +16,23 @@ export class StripeService {
     return this.stripe.webhooks.constructEvent(payload, signature, secret);
   }
 
+  async listSubscriptions(customerId: string) {
+    return this.stripe.subscriptions.list({
+      customer: customerId,
+      status: 'all',
+    });
+  }
+  
+  async findCustomerByEmail(email: string) {
+    const customers = await this.stripe.customers.list({
+      email,
+      limit: 1,
+    });
+    return customers.data[0];
+  }
+
+  // web hooks changes ends
+
   // Fetch all products with their prices
   async getProducts() {
     const products = await this.stripe.products.list({
@@ -56,14 +73,11 @@ export class StripeService {
 
   
   // cancel a subscription
-    async cancelSubscription(subscriptionId: string){
-      try{
-        return await this.stripe.subscriptions.cancel(subscriptionId);
-      }
-      catch(error){
-        throw new Error(error.message);
-      }
-    }
+  async cancelSubscription(subscriptionId: string, immediately = false) {
+    return this.stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: !immediately
+    });
+  }
 
     //  check subscription
     async checkSubscription(email: string){

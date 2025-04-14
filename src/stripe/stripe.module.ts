@@ -3,12 +3,11 @@ import { StripeController } from './stripe.controller';
 import { StripeService } from './stripe.service';
 import { UserModule } from 'src/auth/user.module';
 import { WebhookController } from './webhooks.controller';
-import { StripeWebhookService } from './stripe-webhook.service';
-
+// Import the module that provides CarDetailsModel
 @Module({
   imports: [UserModule],
   controllers: [StripeController, WebhookController],
-  providers: [StripeService, StripeWebhookService],
+  providers: [StripeService],
 })
 export class StripeModule {
 

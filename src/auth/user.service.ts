@@ -56,27 +56,6 @@ export class UserService {
 
   }
 
-  //update subscription
-  async updateSubs(userId: string, updateData: Partial<User>): Promise<User> {
-    // Ensure password is not accidentally updated
-      if ('password' in updateData) {
-        delete updateData.password;
-    }
-    // Automatically update `date_updated`
-    updateData.date_updated = new Date();
-
-    const updatedUser = await this.userModel
-        .findByIdAndUpdate(userId, { $set: updateData }, { new: true }) // `$set` ensures only the provided fields are updated
-        .exec();
-
-    if (!updatedUser) {
-        throw new NotFoundException('User not found');
-    }
-
-    return updatedUser;
-
-  }
-
   // Find User by Email
   async findByEmail(email: string): Promise<User | null> {
     return this.userModel.findOne({ email }).exec();
@@ -138,6 +117,37 @@ export class UserService {
 
   }
 
+  // webhooks changes
+  async findByStripeCustomerId(customerId: string) {
+    return this.userModel.findOne({ stripeCustomerId: customerId }).exec();
+  }
 
+  async update(
+    userId: string, 
+    updateData: Partial<User> // Accepts partial user object
+  ): Promise<User> {
+    try {
+      return await this.userModel.findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        { new: true } // Return the updated document
+      ).exec();
+    } catch (error) {
+      throw new Error(`Failed to update user: ${error.message}`);
+    }
+  }
+
+
+  //update subscription
+  async updateSubs(userId: string, updateData: {
+    is_subscribed: string;
+    subscriptionId?: string;
+    subscriptionStatus?: string;
+    currentPeriodEnd?: Date;
+    subscriptionEndedAt?: Date;
+  }): Promise<User> {
+    return this.update(userId, updateData);
+  }
+    
   
 }

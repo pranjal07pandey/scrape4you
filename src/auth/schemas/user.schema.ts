@@ -48,6 +48,23 @@ export class User extends Document {
   })
   login_attempts: Array<{ timestamp: Date; deviceId: string }>;
 
+
+  // new changes for webhooks
+  @Prop({ index: true })
+  stripeCustomerId: string;  // Stores Stripe customer ID (e.g., 'cus_ABC123DEF456')
+
+  @Prop()
+  subscriptionId: string;  // Stores Stripe subscription ID (e.g., 'sub_XYZ789ABC123')
+
+  @Prop()
+  subscriptionStatus: string;  // 'active', 'past_due', 'canceled', etc.
+
+  @Prop()
+  currentPeriodEnd: Date;  // When current billing period ends
+
+  @Prop()
+  subscriptionEndedAt: Date;  // When subscription was canceled
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

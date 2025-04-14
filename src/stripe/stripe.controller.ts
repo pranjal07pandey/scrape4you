@@ -3,7 +3,7 @@ import {
     Get,
     Post,
     Body,
-    UseGuards
+    UseGuards, HttpException, HttpStatus
 } from '@nestjs/common';
   import { StripeService } from './stripe.service';
   import { AuthGuard } from '@nestjs/passport';
@@ -37,8 +37,14 @@ import {
       const { email, priceId } = body;
   
       try{
-        // Create a customer
-        const customer = await this.stripeService.createCustomer(email);
+        // Create or get existing customer
+        let customer = await this.stripeService.findCustomerByEmail(email);
+        if (!customer) {
+          customer = await this.stripeService.createCustomer(email);
+        }
+
+        // Store customer ID in user record
+        await this.userService.update(userId, { stripeCustomerId: customer.id });
 
         // Step 2: Create a subscription for the customer
         return await this.stripeService.createSubscription(customer.id, priceId);
@@ -53,19 +59,43 @@ import {
     // new apis
     @Post('cancel-subscription')
     @UseGuards(AuthGuard('jwt'))
-    async cancelSubscription(@User() user:any, @Body() body: {subscriptionID: string}){
-      const {subscriptionID} = body;
+    async cancelSubscription(@User() user:any, @Body() body: {subscriptionID: string, cancelImmediately?: boolean}){
+      const {subscriptionID, cancelImmediately = false} = body;
       const userId = user._id;
-      const purchasedSubscription = 'None';
 
+      try {
+        // 1. Request cancellation from Stripe
+      const cancelledSubscription = await this.stripeService.cancelSubscription(
+        subscriptionID,
+        cancelImmediately
+      );
 
-      const cancelledSubscription =  await this.stripeService.cancelSubscription(subscriptionID);
+      // 2. Update local status to reflect pending cancellation
+      await this.userService.updateSubs(userId, {
+        subscriptionStatus: cancelledSubscription.status, // Will be 'active' but canceling
+        is_subscribed: cancelledSubscription.cancel_at_period_end 
+          ? 'pending_cancellation' 
+          : 'None',
+        subscriptionEndedAt: cancelledSubscription.cancel_at_period_end
+          ? new Date(cancelledSubscription.current_period_end * 1000)
+          : new Date()
+      });
 
-      if(cancelledSubscription){
-        await this.userService.updateSubs(userId, { is_subscribed: purchasedSubscription });
+      // 3. Return the Stripe subscription object
+      return {
+        message: cancelImmediately 
+          ? 'Subscription canceled immediately' 
+          : 'Subscription will cancel at period end',
+        subscription: cancelledSubscription
+      };
+ 
+      } catch (error) {
+        throw new HttpException(
+          `Failed to cancel subscription: ${error.message}`,
+          HttpStatus.BAD_REQUEST
+        );
       }
 
-      return cancelledSubscription;
     }
 
     @Post('check-subscription')

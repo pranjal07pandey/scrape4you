@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { json } from 'express';
-
+import * as express from 'express'; // Add this import at the top
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -15,11 +15,18 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'scrape_frontend', 'build'));
 
   // This allows us to access raw body for webhook signature verification
-  app.use('/webhook/stripe', json({ verify: (req: any, res, buf) => {
-    if (buf && buf.length) {
-      req.rawBody = buf.toString('utf8');
-      }
-  }}));
+  // Stripe Webhook Middleware
+  app.use('/stripe/webhook', 
+    express.raw({ 
+      type: 'application/json',
+      verify: (req: any, res, buf) => {
+        if (Buffer.isBuffer(buf)) {
+          req.rawBody = buf;
+        }
+      },
+      limit: '1mb'
+    })
+  );
 
   app.use(json());
 
