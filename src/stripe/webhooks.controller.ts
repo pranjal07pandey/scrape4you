@@ -19,7 +19,10 @@ export class WebhookController {
     @Req() request: RawBodyRequest<Request>,
     @Res() res: Response,
   ) {
-    if (!signature) {
+    const sig = request.headers['stripe-signature'];
+    console.log("The webhook signature is-----> ", sig);
+
+    if (!sig) {
       throw new Error('Missing stripe-signature header');
     }
 
@@ -30,7 +33,7 @@ export class WebhookController {
     try {
        event = this.stripeService.constructEvent(
         request.rawBody,
-        signature,
+        sig.toString(),
         process.env.STRIPE_WEBHOOK_SECRET
       );
       
