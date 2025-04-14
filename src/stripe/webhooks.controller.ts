@@ -149,7 +149,8 @@ export class WebhookController {
       is_subscribed: 'None',
       subscriptionStatus: 'cancelled',
       subscriptionEndedAt: new Date(),
-      currentPeriodEnd: null
+      currentPeriodEnd: null,
+      subscriptionId: null  // Clear the ID since it's deleted
     });
 
     this.logger.log(`Cancelled subscription for user ${user._id}`);

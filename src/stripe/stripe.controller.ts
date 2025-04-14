@@ -71,14 +71,23 @@ import {
       );
 
       // 2. Update local status to reflect pending cancellation
+      // await this.userService.updateSubs(userId, {
+      //   subscriptionStatus: 'cancelled', // Will be 'active' but canceling code: cancelledSubscription.status
+      //   is_subscribed: cancelledSubscription.cancel_at_period_end 
+      //     ? 'pending_cancellation' 
+      //     : 'None',
+      //   subscriptionEndedAt: cancelledSubscription.cancel_at_period_end
+      //     ? new Date(cancelledSubscription.current_period_end * 1000)
+      //     : new Date()
+      // });
+      if (cancelledSubscription) {
+
       await this.userService.updateSubs(userId, {
-        subscriptionStatus: 'cancelled', // Will be 'active' but canceling code: cancelledSubscription.status
-        is_subscribed: cancelledSubscription.cancel_at_period_end 
-          ? 'pending_cancellation' 
-          : 'None',
-        subscriptionEndedAt: cancelledSubscription.cancel_at_period_end
-          ? new Date(cancelledSubscription.current_period_end * 1000)
-          : new Date()
+        is_subscribed: 'None',
+        subscriptionStatus: 'cancelled',
+        subscriptionEndedAt: new Date(),
+        currentPeriodEnd: null,
+        subscriptionId: null  // Clear the ID since it's deleted
       });
 
       // 3. Return the Stripe subscription object
@@ -88,6 +97,8 @@ import {
           : 'Subscription will cancel at period end',
         subscription: cancelledSubscription
       };
+      
+    }
  
       } catch (error) {
         throw new HttpException(

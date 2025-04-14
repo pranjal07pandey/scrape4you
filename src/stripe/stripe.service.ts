@@ -74,9 +74,18 @@ export class StripeService {
   
   // cancel a subscription
   async cancelSubscription(subscriptionId: string, immediately = true) {
-    return this.stripe.subscriptions.update(subscriptionId, {
-      cancel_at_period_end: !immediately
-    });
+    // return this.stripe.subscriptions.update(subscriptionId, {
+    //   cancel_at_period_end: !immediately
+    // });
+    try {
+      // This will immediately terminate the subscription
+      await this.stripe.subscriptions.cancel(subscriptionId);
+      return true;
+    } catch (error) {
+      console.error('Failed to delete subscription:', error);
+      return false;
+    }
+     
   }
 
     //  check subscription
