@@ -72,7 +72,7 @@ import {
 
       // 2. Update local status to reflect pending cancellation
       await this.userService.updateSubs(userId, {
-        subscriptionStatus: cancelledSubscription.status, // Will be 'active' but canceling
+        subscriptionStatus: 'cancelled', // Will be 'active' but canceling code: cancelledSubscription.status
         is_subscribed: cancelledSubscription.cancel_at_period_end 
           ? 'pending_cancellation' 
           : 'None',
@@ -84,7 +84,7 @@ import {
       // 3. Return the Stripe subscription object
       return {
         message: cancelImmediately 
-          ? 'Subscription canceled immediately' 
+          ? 'Subscription cancelled immediately' 
           : 'Subscription will cancel at period end',
         subscription: cancelledSubscription
       };

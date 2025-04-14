@@ -83,7 +83,36 @@ export class WebhookController {
 
     const customerId = subscription.customer as string;
     const planId = subscription.items.data[0].price.id;
-    
+
+    const subscriptionTypes = [
+      {
+        id: 'price_1R15A1DnmorUxCln7W0DslGy',
+        name: 'Salvage Monthly',
+      },
+      {
+        id: 'price_1R57DZDnmorUxClnRG48rfKZ',
+        name: 'Salvage Weekly',
+      },
+      {
+        id: 'price_1R573DDnmorUxClnp4X4Imki',
+        name: 'Scrap Monthly',
+      },
+      {
+        id: 'price_1R57CnDnmorUxClnS97UhVMT',
+        name: 'Scrap Weekly',
+      },
+      {
+        id: 'price_1R9a3xDnmorUxClnuwyFYx1B',
+        name: 'Corporate Salvage',
+      },
+      {
+        id: 'price_1R9a2eDnmorUxCln8q94c9Xg',
+        name: 'Corporate Salvage',
+      }
+    ]
+
+    const matchedPlan = subscriptionTypes.find((plan) => plan.id === planId);
+
     // Find user by customer ID (you might need to store this mapping in your DB)
     const user = await this.userService.findByStripeCustomerId(customerId);
     
@@ -94,7 +123,7 @@ export class WebhookController {
 
     // Update user subscription status
     await this.userService.updateSubs(user._id.toString(), {
-      is_subscribed: planId,
+      is_subscribed: matchedPlan.name,
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
@@ -118,7 +147,7 @@ export class WebhookController {
 
     await this.userService.updateSubs(user._id.toString(), {
       is_subscribed: 'None',
-      subscriptionStatus: 'canceled',
+      subscriptionStatus: 'cancelled',
       subscriptionEndedAt: new Date(),
       currentPeriodEnd: null
     });
