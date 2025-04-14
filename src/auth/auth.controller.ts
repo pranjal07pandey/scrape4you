@@ -62,6 +62,8 @@ export class AuthController {
 
           // Allow the login and record the attempt
           user.login_attempts.push({ timestamp: now, deviceId });
+          
+          await this.userService.update(user._id.toString(), {login_attempts: user.login_attempts,})
 
         if (user.active_devices.includes(deviceId)) {
           // Device is already registered, no confirmation needed

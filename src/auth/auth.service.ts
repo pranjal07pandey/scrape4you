@@ -80,7 +80,7 @@ export class AuthService {
     }
 
     // Save updated user data
-    await this.userService.updateUser(user._id.toString(), { login_attempts: user.login_attempts, active_devices: user.active_devices });
+    await this.userService.updateUser(user._id.toString(), { active_devices: user.active_devices });
 
     const payload = { sub: user._id, email: user.email };
     const access_token = this.jwtService.sign(payload);
