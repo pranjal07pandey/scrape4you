@@ -16,16 +16,17 @@ async function bootstrap() {
 
   // This allows us to access raw body for webhook signature verification
   // Stripe Webhook Middleware
-  app.use('/stripe/webhook', 
+  app.use('/webhook/stripe', 
     express.raw({ 
       type: 'application/json',
       verify: (req: any, res, buf) => {
+        console.log("inside the web hook middleware...");
         if (Buffer.isBuffer(buf)) {
           req.rawBody = buf;
         }
       },
       limit: '1mb'
-    })
+    })  
   );
 
   app.use(json());

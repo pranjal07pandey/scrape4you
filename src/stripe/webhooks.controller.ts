@@ -13,7 +13,7 @@ export class WebhookController {
     private readonly userService: UserService,
   ) {}
 
-  @Post()
+  @Post('/webhook/stripe')
   async handleStripeWebhook(
     @Headers('stripe-signature') signature: string,
     @Req() request: RawBodyRequest<Request>,
@@ -22,6 +22,9 @@ export class WebhookController {
     if (!signature) {
       throw new Error('Missing stripe-signature header');
     }
+
+    //
+    console.log("Hit the webhook/stripe api...", request.rawBody);
 
     let event: any;
     try {
