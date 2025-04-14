@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Put, UseGuards, BadRequestException, Delete, UnauthorizedException} from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Put, UseGuards, BadRequestException, Delete, UnauthorizedException, HttpException} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -36,6 +36,32 @@ export class AuthController {
 
         const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
         const deviceLimit = isCorporate ? 2 : 1;
+
+        const now = new Date();
+        const COOLDOWN_MINUTES = 1;
+        const NORMAL_LOGIN_LIMIT = 2;
+        const CORPORATE_LOGIN_LIMIT = 3;
+        const cooldownWindow = COOLDOWN_MINUTES * 60 * 1000;
+
+        user.login_attempts = user.login_attempts.filter(
+              attempt => now.getTime() - attempt.timestamp.getTime() <= cooldownWindow
+            );
+        
+            // Check if the user has hit the login limit
+            const loginLimit = isCorporate ? CORPORATE_LOGIN_LIMIT : NORMAL_LOGIN_LIMIT;
+        
+            if (!user.active_devices.includes(deviceId)){
+              if (user.login_attempts.length >= loginLimit) {
+                throw new HttpException(
+                  `Too many login attempts. Wait ${COOLDOWN_MINUTES} minutes before trying again.`,
+                  429, // 429 = Too Many Requests
+                );
+              }
+        
+            }
+
+          // Allow the login and record the attempt
+          user.login_attempts.push({ timestamp: now, deviceId });
 
         if (user.active_devices.includes(deviceId)) {
           // Device is already registered, no confirmation needed
