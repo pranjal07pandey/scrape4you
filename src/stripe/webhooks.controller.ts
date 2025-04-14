@@ -81,7 +81,6 @@ export class WebhookController {
     this.logger.warn(`Hit the handleSubscriptionChange api via webhook.. ${subscription}`);
     console.log('Hit the handleSubscriptionChange api via webhook..');
 
-    return
     const customerId = subscription.customer as string;
     const planId = subscription.items.data[0].price.id;
     
@@ -108,8 +107,6 @@ export class WebhookController {
 
     this.logger.warn(`Hit the handleSubscriptionCancelled api via webhook.. ${subscription}`);
     console.log('Hit the handleSubscriptionCancelled api via webhook..');
-
-    return
 
     const customerId = subscription.customer as string;
     const user = await this.userService.findByStripeCustomerId(customerId);
