@@ -22,7 +22,7 @@ async function bootstrap() {
       verify: (req: any, res, buf) => {
         console.log("inside the web hook middleware...");
         if (Buffer.isBuffer(buf)) {
-          req.rawBody = buf.toString('utf8');
+          req.rawBody = buf;
         }
       },
       limit: '1mb'

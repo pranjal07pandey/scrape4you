@@ -19,10 +19,12 @@ export class WebhookController {
     @Req() request: RawBodyRequest<Request>,
     @Res() res: Response,
   ) {
-    const sig = request.headers['stripe-signature'];
-    console.log("The webhook signature is-----> ", sig);
+    // Debug logging (temporary)
+    console.log('Raw body length:', request.rawBody?.length);
+    console.log('Signature header:', signature);
 
-    if (!sig) {
+    if (!signature) {
+      this.logger.error('Missing stripe-signature header');
       throw new Error('Missing stripe-signature header');
     }
 
@@ -33,12 +35,14 @@ export class WebhookController {
     try {
        event = this.stripeService.constructEvent(
         request.rawBody,
-        sig.toString(),
+        signature,
         process.env.STRIPE_WEBHOOK_SECRET
       );
       
     } catch (err) {
-      this.logger.error(`Webhook signature verification failed: ${err.message}`);
+      this.logger.error(`Verification failed. Raw body start: ${request.rawBody?.toString().substring(0, 100)}`);
+      this.logger.error(`Signature: ${signature}`);
+      this.logger.error(`Webhook secret: ${process.env.STRIPE_WEBHOOK_SECRET?.slice(0, 5)}...`);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
