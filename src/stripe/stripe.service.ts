@@ -73,7 +73,7 @@ export class StripeService {
 
   
   // cancel a subscription
-  async cancelSubscription(subscriptionId: string, immediately = false) {
+  async cancelSubscription(subscriptionId: string, immediately = true) {
     return this.stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: !immediately
     });

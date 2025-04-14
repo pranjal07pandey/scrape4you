@@ -60,7 +60,7 @@ import {
     @Post('cancel-subscription')
     @UseGuards(AuthGuard('jwt'))
     async cancelSubscription(@User() user:any, @Body() body: {subscriptionID: string, cancelImmediately?: boolean}){
-      const {subscriptionID, cancelImmediately = false} = body;
+      const {subscriptionID, cancelImmediately = true} = body;
       const userId = user._id;
 
       try {
