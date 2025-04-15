@@ -39,8 +39,8 @@ export class AuthController {
 
         const now = new Date();
         const COOLDOWN_MINUTES = 1;
-        const NORMAL_LOGIN_LIMIT = 2;
-        const CORPORATE_LOGIN_LIMIT = 3;
+        const NORMAL_LOGIN_LIMIT = 1;
+        const CORPORATE_LOGIN_LIMIT = 2;
         const cooldownWindow = COOLDOWN_MINUTES * 60 * 1000;
 
         user.login_attempts = user.login_attempts.filter(
