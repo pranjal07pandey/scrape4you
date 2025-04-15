@@ -103,7 +103,7 @@ export class StripeService {
             const subscriptions = await this.stripe.subscriptions.list({
               customer: customer.id,
               status: 'active',
-              limit: 1
+              // limit: 1
             });
           
           if (subscriptions.data.length > 0) {
