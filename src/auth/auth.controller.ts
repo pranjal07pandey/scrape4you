@@ -5,12 +5,20 @@ import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.decorator'; // Import the custom interface
 import * as bcrypt from 'bcrypt';
 
+import { Twilio } from 'twilio';
+import { Otp } from './schemas/otp.schema';
+
+
 @Controller('auth')
+
 export class AuthController {
+    private twilioClient: Twilio;
     constructor(
         private authService: AuthService,
         private userService: UserService,
-      ) {}
+      ) {
+        this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      }
     
       @Post('register')
       async register(@Body() body: any) {
@@ -174,6 +182,76 @@ export class AuthController {
       async deleteAgent(@Param('userId') userId:string){
         return this.userService.deleteAgentById(userId);
       }
+
+      // forget password, 1 request otp
+      @Post('request-otp')
+      async requestOtp(@Body('phone') phone: string){
+
+        const otpReq = await this.userService.createOtp(phone);
+
+        return otpReq;
+
+        // if (optReq.success){
+        //   await this.twilioClient.messages.create({
+        //     to: phone,
+        //     from: process.env.TWILIO_PHONE_NUMBER,
+        //     body: `Your verification code is ${optReq.otp}. This code expires in 10 minutes.}`
+        //   });
+
+        //   return {success: true}
+        // }
+        // else{
+        //   return {success: false}
+        // }
+      }
+
+      @Post('verify-otp')
+      async verifyOtp(
+        @Body('otp') otp: string,
+        @Body('phone') phone: string
+      )
+      {
+        const isValid = await this.userService.validateOtp(otp, phone);
+
+        if (!isValid){
+          throw new BadRequestException('Cannot verify the OTP')
+        }
+
+        return{
+          success: true,
+          message: "Otp verified"
+        }
+
+      }
+
+      @Put('reset-password')
+      @UseGuards(AuthGuard('jwt'))
+      async resetPassword(@User() user: any, @Body('password') password: string){
+        const userId = user._id;
+
+        try {
+          const update_data =  await this.userService.updateUser(userId.toString(), {password: password})
+
+          return {success: true, update_data}
+ 
+        } catch (error) {
+          throw new BadRequestException('Cannot change the password')
+          
+        }
+
+      }
+
+      // block/unblock user
+      @Post('unblock/:id')
+      async unblockUser(@Param('id') userId: string){
+        return this.authService.unblockUser(userId);
+      }
+
+      @Post('block/:id')
+      async blockUser(@Param('id') userId: string){
+        return this.authService.blockUser(userId);
+      }
+
       
 
 }

@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User } from './schemas/user.schema';
+import { Otp } from './schemas/otp.schema';
 import { CarDetails } from 'src/car-details.schema';
 import { Types } from 'mongoose';
 
@@ -10,7 +11,8 @@ import { Types } from 'mongoose';
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(CarDetails.name) private carModel: Model<CarDetails>
+    @InjectModel(CarDetails.name) private carModel: Model<CarDetails>,
+    @InjectModel(Otp.name) private otpModel: Model<Otp>, // If using Mongoose
 
   ) {}
 
@@ -148,6 +150,80 @@ export class UserService {
   }): Promise<User> {
     return this.update(userId, updateData);
   }
+
+
+  async createOtp(phone: string): Promise<{ success: boolean, otp: string, phone: string }> {
+  
+
+      console.log('Clean phone: ', phone);
+
+    
+      // Check if user exists (without revealing)
+      const user = await this.userModel.findOne({ phone: phone });
+      if (!user) return {success: false, otp: "", phone: phone}
+
+      // Delete any existing OTPs for this number
+      await this.otpModel.deleteMany({ phone: phone });
+  
+      // Generate OTP (6 digits)
+      const rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      const hashedOtp = await bcrypt.hash(rawOtp, 10);
+      const expiresAt = new Date(Date.now() + 10 * 60000); // 2 minutes
+  
+      // Create new OTP document - MongoDB ensures atomic creation
+      await this.otpModel.create({
+        phone: phone,
+        code: hashedOtp,
+        expiresAt,
+      });
+  
+      return {
+          success: true, 
+          otp: rawOtp,
+          phone: phone
+      }
+    }
+
+  async validateOtp(otp: string, phone:string): Promise<boolean> {
+
+    try {
+      // Find all active OTPs for this phone
+      const otpRecord = await this.otpModel.find({
+        phone: phone,
+        used: false,
+        expiresAt: { $gt: new Date() }
+      }).sort({ createdAt: -1 }); // Get most recent first
+
+      console.log('OTP record--->', otpRecord);
+      if(otpRecord.length == 0){
+        return false;
+      }
+
+      // Compare the provided OTP
+      const isValid = await bcrypt.compare(otp, otpRecord[0].code);
+
+      if (isValid){
+        // Mark as read
+        await this.otpModel.updateOne(
+          {_id: otpRecord[0]._id},
+          { $set : {used: true}}
+        );
+        return true
+      }
+      return false;
+    } catch (error) {
+      throw new Error(`Failed to verify OTP: ${error.message}`);
+    }
+      
+  }
+  
+    async getActiveOtps(phone: string): Promise<Otp[]> {
+      return this.otpModel.find({
+        phone,
+        used: false,
+        expiresAt: { $gt: new Date() }
+      });
+    }
     
   
 }

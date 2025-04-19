@@ -23,6 +23,8 @@ import { JwtModule } from '@nestjs/jwt';  // Import JwtModule (if using in AppMo
 import { S3Service } from './car-info/upload-image';
 import { StripeModule } from './stripe/stripe.module';
 import { AdminModule } from './admin/admin.module';
+import { Otp, OtpSchema } from './auth/schemas/otp.schema';
+import { QuotesModule } from './quote/quote.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -35,7 +37,8 @@ import { AdminModule } from './admin/admin.module';
     MongooseModule.forRoot(process.env.MONGODB_URL),
     MongooseModule.forFeature([
       { name: CarDetails.name, schema: CarDetailsSchema },  // Car schema
-      { name: User.name, schema: UserSchema }               // User schema
+      { name: User.name, schema: UserSchema },
+      {name: Otp.name, schema: OtpSchema}               // User schema
     ]),
     
     JwtModule.register({
@@ -46,6 +49,7 @@ import { AdminModule } from './admin/admin.module';
     AuthModule, // Auth module handles registration and login
     StripeModule,
     AdminModule,
+    QuotesModule,
   ],
   controllers: [AppController, CarInfoController, AuthController],
   providers: [AppService, CarInfoService, CarDetailsService, AuthService, UserService, S3Service],

@@ -99,5 +99,25 @@ export class AuthService {
     return user;
   }
 
+  // unblock the user
+  async unblockUser(userId: string): Promise<User> {
+    return await this.userService.update(
+      userId,
+      {
+        is_blocked: false
+      },
+    );
+  }
+
+  // block the user
+  async blockUser(userId: string): Promise<User> {
+    return await this.userService.update(
+      userId,
+      {
+        is_blocked: true
+      },
+    );
+  }
+
 
 }

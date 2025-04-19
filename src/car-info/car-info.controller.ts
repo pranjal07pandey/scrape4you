@@ -1,7 +1,6 @@
 import { Controller, Post, Get, Body, BadRequestException, Patch, Param, HttpStatus, HttpException, Put, Delete, UseGuards, UseInterceptors, UploadedFile} from '@nestjs/common';
 import { CarInfoService } from './car-info.service';
 import { Twilio } from 'twilio';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express'; // Import Express types
 import { S3Service } from './upload-image'; // Import the S3 service

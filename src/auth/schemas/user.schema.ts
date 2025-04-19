@@ -65,6 +65,9 @@ export class User extends Document {
   @Prop()
   subscriptionEndedAt: Date;  // When subscription was canceled
 
+  @Prop({default: false})
+  is_blocked: boolean;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
