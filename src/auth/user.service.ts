@@ -168,7 +168,7 @@ export class UserService {
       // Generate OTP (6 digits)
       const rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
       const hashedOtp = await bcrypt.hash(rawOtp, 10);
-      const expiresAt = new Date(Date.now() + 10 * 60000); // 2 minutes
+      const expiresAt = new Date(Date.now() + 3 * 60000); // 3 minutes
   
       // Create new OTP document - MongoDB ensures atomic creation
       await this.otpModel.create({

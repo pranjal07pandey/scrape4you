@@ -12,6 +12,9 @@ export class Quote extends Document {
 
   @Prop({ required: true })
   amount: number; // Only storing the amount as requested
+
+  @Prop({required: false})
+  message: string;
 }
 
 export const QuoteSchema = SchemaFactory.createForClass(Quote);

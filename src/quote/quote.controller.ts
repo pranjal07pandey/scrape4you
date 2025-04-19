@@ -10,9 +10,11 @@ export class QuotesController {
   async createQuote(
     @Body('listingId') listingId: string,
     @Body('agentId') agentId: string,
-    @Body('amount') amount: number
+    @Body('amount') amount: number,
+    @Body('message') message: string,
+
   ) {
-    return this.quotesService.createQuote(listingId, agentId, amount);
+    return this.quotesService.createQuote(listingId, agentId, amount, message);
   }
 
   @Get(':listingId')

@@ -8,8 +8,8 @@ import { Quote } from './quote.schema';
 export class QuotesService {
   constructor(@InjectModel(Quote.name) private quoteModel: Model<Quote>) {}
 
-  async createQuote(listingId: string, agentId: string, amount: number) {
-    const quote = new this.quoteModel({ listingId, agentId, amount });
+  async createQuote(listingId: string, agentId: string, amount: number, message: string) {
+    const quote = new this.quoteModel({ listingId, agentId, amount, message });
     return quote.save();
   }
 

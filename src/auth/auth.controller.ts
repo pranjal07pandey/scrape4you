@@ -189,20 +189,18 @@ export class AuthController {
 
         const otpReq = await this.userService.createOtp(phone);
 
-        return otpReq;
+        if (otpReq.success){
+          await this.twilioClient.messages.create({
+            to: phone,
+            from: process.env.TWILIO_PHONE_NUMBER,
+            body: `Your verification code is: ${otpReq.otp}. This code expires in 3 minutes`
+          });
 
-        // if (optReq.success){
-        //   await this.twilioClient.messages.create({
-        //     to: phone,
-        //     from: process.env.TWILIO_PHONE_NUMBER,
-        //     body: `Your verification code is ${optReq.otp}. This code expires in 10 minutes.}`
-        //   });
-
-        //   return {success: true}
-        // }
-        // else{
-        //   return {success: false}
-        // }
+          return {success: true, message: "OTP sent to your phone number."}
+        }
+        else{
+          return {success: false, message: "OTP sent failed."}
+        }
       }
 
       @Post('verify-otp')
