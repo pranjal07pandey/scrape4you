@@ -18,7 +18,12 @@ export class QuotesController {
   }
 
   @Get(':listingId')
-  async getQuotes(@Param('listingId') listingId: string) {
+  async getClientQuotes(@Param('listingId') listingId: string) {
     return this.quotesService.getQuotesForListing(listingId);
+  }
+
+  @Get('agent/:agentId')
+  async getAgentQuotes(@Param('agentId') agentId: string){
+    return this.quotesService.getQuotesForAgents(agentId);
   }
 }

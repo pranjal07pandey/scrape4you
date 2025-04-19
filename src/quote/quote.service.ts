@@ -16,4 +16,8 @@ export class QuotesService {
   async getQuotesForListing(listingId: string) {
     return this.quoteModel.find({ listingId }).sort({ amount: -1 }).exec();
   }
+
+  async getQuotesForAgents(agentId: string) {
+    return this.quoteModel.find({ agentId }).sort({ createdAt: -1 }).exec();
+  }
 }

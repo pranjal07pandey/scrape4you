@@ -63,6 +63,11 @@ export class UserService {
     return this.userModel.findOne({ email }).exec();
   }
 
+  // find User by Phone Number
+  async findByNumber(phone: string): Promise<User | null> {
+    return this.userModel.findOne({ phone }).exec();
+  }
+
   // Find User by ID
   async findById(id: string): Promise<User | null> {
     return this.userModel.findById(id).exec();

@@ -189,6 +189,10 @@ export class AuthController {
 
         const otpReq = await this.userService.createOtp(phone);
 
+        // return otpReq;
+
+        console.log('To phone: ', otpReq.phone);
+
         if (otpReq.success){
           await this.twilioClient.messages.create({
             to: phone,
@@ -223,12 +227,15 @@ export class AuthController {
       }
 
       @Put('reset-password')
-      @UseGuards(AuthGuard('jwt'))
-      async resetPassword(@User() user: any, @Body('password') password: string){
-        const userId = user._id;
+      async resetPassword(@Body('phone') phone: string, @Body('password') password: string){
+        const user = await this.userService.findByNumber(phone);
+
+        if(!user){
+          return {success: false, message: "User not found."}
+        }
 
         try {
-          const update_data =  await this.userService.updateUser(userId.toString(), {password: password})
+          const update_data =  await this.userService.updateUser(user._id.toString(), {password: password})
 
           return {success: true, update_data}
  
