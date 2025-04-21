@@ -6,7 +6,6 @@ import { User } from './user.decorator'; // Import the custom interface
 import * as bcrypt from 'bcrypt';
 
 import { Twilio } from 'twilio';
-import { Otp } from './schemas/otp.schema';
 
 
 @Controller('auth')
@@ -30,14 +29,25 @@ export class AuthController {
       async attemptLogin(@Body() body: { email: string, password: string, deviceId: string}){
         const {email, password, deviceId} = body;
 
-        const user = await this.userService.findByEmail(email);
+        const now = new Date();
 
+        const user = await this.userService.findByEmail(email);
         if (!user){
           throw new UnauthorizedException('Invalid Email or password')
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        // check  if user is permanently blocked
+        if (user.is_blocked){
+          throw new UnauthorizedException('Your account is blocked. Please contact admin to unblock your account.')
+        }
 
+        //check if user is temporarily locked out
+        if (user.lockout_until && now < user.lockout_until){
+          const remainingTime = Math.ceil((user.lockout_until.getTime() - now.getTime()) / (1000 * 60));
+          throw new UnauthorizedException(`Account temporarily locked. Try again in ${remainingTime} minutes.`);
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
           throw new UnauthorizedException('Invalid Email or password');
         }
@@ -45,51 +55,91 @@ export class AuthController {
         const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
         const deviceLimit = isCorporate ? 2 : 1;
 
-        const now = new Date();
-        const COOLDOWN_MINUTES = 1;
-        const NORMAL_LOGIN_LIMIT = 1;
-        const CORPORATE_LOGIN_LIMIT = 2;
-        const cooldownWindow = COOLDOWN_MINUTES * 60 * 1000;
+        // new: check for multi-device violations
+        if (!user.active_devices.includes(deviceId)){
+          if (user.active_devices.length >= deviceLimit){
 
-        user.login_attempts = user.login_attempts.filter(
-              attempt => now.getTime() - attempt.timestamp.getTime() <= cooldownWindow
-            );
-        
-            // Check if the user has hit the login limit
-            const loginLimit = isCorporate ? CORPORATE_LOGIN_LIMIT : NORMAL_LOGIN_LIMIT;
-        
-            if (!user.active_devices.includes(deviceId)){
-              if (user.login_attempts.length >= loginLimit) {
-                throw new HttpException(
-                  `Too many login attempts. Wait ${COOLDOWN_MINUTES} minutes before trying again.`,
-                  429, // 429 = Too Many Requests
-                );
+            // This is a violation - increment counter
+            const updatedViolations = user.login_violations + 1;
+            let lockoutUntil = null;
+            let message = '';
+
+            // Apply appropriate lockout based on violation count
+                switch (updatedViolations) {
+                  case 2:
+                    lockoutUntil = new Date(now.getTime() + 3 * 60 * 1000); // 3 hours
+                    message = 'Second violation: 3-mins lockout with warning.';
+                    break;
+                  case 3:
+                    lockoutUntil = new Date(now.getTime() + 4 * 60 * 1000); // 24 hours
+                    message = 'Third violation: 4-mins lockout with final warning.';
+                    break;
+                  case 4:
+                    lockoutUntil = null;
+                    message = 'Fourth violation: Account permanently blocked. Contact admin.';
+                    break;
+                }
+
+              // Update user with violation and lockout
+              await this.userService.update(user._id.toString(), {
+                login_violations: updatedViolations,
+                lockout_until: lockoutUntil,
+                is_blocked: updatedViolations >= 4
+              });
+
+              if (updatedViolations > 1){
+                throw new UnauthorizedException(message);
               }
-        
-            }
+              else{
+                return {
+                  requires_confirmation: true,
+                  message: isCorporate 
+                    ? 'There are already 2 devices logged in. Continue will log out your oldest device.'
+                    : 'There is already a device logged in. Continue will log it out.'
+                };
+              }
 
-          // Allow the login and record the attempt
-          user.login_attempts.push({ timestamp: now, deviceId });
-          
-          await this.userService.update(user._id.toString(), {login_attempts: user.login_attempts,})
-
-        if (user.active_devices.includes(deviceId)) {
-          // Device is already registered, no confirmation needed
-          return { requires_confirmation: false };
+          }
         }
 
-        if (user.active_devices.length >= deviceLimit) {
-          // Needs confirmation to force logout others
-          return {
-            requires_confirmation: true,
-            message: isCorporate 
-              ? 'There are already 2 devices logged in. Continue will log out your oldest device.'
-              : 'There is already a device logged in. Continue will log it out.'
-          };
+        // Reset violation counter on successful login from allowed device
+        if (user.login_violations > 0 && user.active_devices.includes(deviceId)) {
+          await this.userService.update(user._id.toString(), {
+            login_violations: 0,
+            lockout_until: null
+          });
         }
 
         // No confirmation needed
         return { requires_confirmation: false };
+
+        // const COOLDOWN_MINUTES = 1;
+        // const NORMAL_LOGIN_LIMIT = 1;
+        // const CORPORATE_LOGIN_LIMIT = 2;
+        // const cooldownWindow = COOLDOWN_MINUTES * 60 * 1000;
+
+        // user.login_attempts = user.login_attempts.filter(
+        //       attempt => now.getTime() - attempt.timestamp.getTime() <= cooldownWindow
+        //     );
+        
+        //     // Check if the user has hit the login limit
+        //     const loginLimit = isCorporate ? CORPORATE_LOGIN_LIMIT : NORMAL_LOGIN_LIMIT;
+        
+        //     if (!user.active_devices.includes(deviceId)){
+        //       if (user.login_attempts.length >= loginLimit) {
+        //         throw new HttpException(
+        //           `Too many login attempts. Wait ${COOLDOWN_MINUTES} minutes before trying again.`,
+        //           429, // 429 = Too Many Requests
+        //         );
+        //       }
+        
+        //     }
+
+        // // Allow the login and record the attempt
+        // user.login_attempts.push({ timestamp: now, deviceId });
+          
+        // await this.userService.update(user._id.toString(), {login_attempts: user.login_attempts})
+
         
       }
 

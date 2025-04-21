@@ -65,8 +65,15 @@ export class User extends Document {
   @Prop()
   subscriptionEndedAt: Date;  // When subscription was canceled
 
+  // implementing user block
   @Prop({default: false})
   is_blocked: boolean;
+
+  @Prop({ default: 0 })
+  login_violations: number; // Track number of violations
+
+  @Prop()
+  lockout_until: Date; // When the lockout expires
 
 }
 
