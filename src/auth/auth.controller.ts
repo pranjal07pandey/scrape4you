@@ -167,7 +167,10 @@ export class AuthController {
           phone_number: user.phone,
           profile_image: user.profile_image,
           is_subscribed: user.is_subscribed,
-          active_devices: user.active_devices
+          active_devices: user.active_devices,
+          is_blocked: user.is_blocked,
+          unblock_message: user.unblock_message,
+          login_violations: user.login_violations
         }
 
       }
@@ -307,6 +310,32 @@ export class AuthController {
         return this.authService.blockUser(userId);
       }
 
-      
+      @Post('message-admin')
+      async messageAdmin(@Body() body: { phone: string, message: string}){
+        const {phone, message} = body;
+
+        const user = await this.userService.findByNumber(phone);
+
+        if(!user){
+          throw new BadRequestException('User not found');
+        }
+
+        if (!user.is_blocked) {
+          throw new BadRequestException('Your account is not blocked');
+        }
+
+        if (user.unblock_message.length >= 1){
+          throw new BadRequestException('Unblock message sent already. Admin will contact you.');
+        }
+
+        await this.userService.update(user._id.toString(), {unblock_message: message});
+
+        return{
+          success: true, 
+          message: 'Your unblock request has been submitted. Admin will contact you.'
+        }
+
+      }
+  
 
 }

@@ -14,7 +14,7 @@ export class User extends Document {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   phone: string;
 
   @Prop({ required: true })
@@ -74,6 +74,10 @@ export class User extends Document {
 
   @Prop()
   lockout_until: Date; // When the lockout expires
+
+  // message to admins
+  @Prop({default: ''})
+  unblock_message: string;
 
 }
 

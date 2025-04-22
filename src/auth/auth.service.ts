@@ -18,10 +18,16 @@ export class AuthService {
         throw new UnauthorizedException('Password is required');
       }
 
-    const existingUser = await this.userService.findByEmail(userData.email);
-    if (existingUser) {
+    const existingUserByEmail = await this.userService.findByEmail(userData.email);
+    if (existingUserByEmail) {
       throw new UnauthorizedException('Email already exists');
     }
+
+    const existingUserByPhone = await this.userService.findByNumber(userData.phone);
+    if (existingUserByPhone){
+      throw new UnauthorizedException('Phone Number already exists');
+    }
+
     return this.userService.create(userData);
   }
 
@@ -104,7 +110,9 @@ export class AuthService {
     return await this.userService.update(
       userId,
       {
-        is_blocked: false
+        is_blocked: false,
+        unblock_message: '',
+        login_violations: 0
       },
     );
   }
