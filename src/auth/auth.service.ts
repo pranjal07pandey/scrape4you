@@ -43,6 +43,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid Email or password');
     }
 
+    // check  if user is permanently blocked
+    if (user.is_blocked){
+      throw new UnauthorizedException('Your account is blocked. Please contact admin to unblock your account.')
+    }
+
     const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
     const deviceLimit = isCorporate ? 2 : 1;
 
