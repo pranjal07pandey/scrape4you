@@ -92,4 +92,11 @@ export class CarDetailsService {
   }
 
 
+  // get all agents
+  async fetchAllAgents(){
+    return this.userModel.find({ 
+      fcm_token: { $ne: null }, // MongoDB query syntax
+    }).exec();
+  }
+
 }

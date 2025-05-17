@@ -8,6 +8,8 @@ import { CarDetailsService } from 'src/car-details.service';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/auth/user.decorator';
 
+import * as admin from 'firebase-admin';
+
 @Controller('car')
 export class CarInfoController {
 
@@ -17,6 +19,15 @@ export class CarInfoController {
     private readonly carDetailsService: CarDetailsService,
     private readonly s3Service: S3Service) {
     this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+    // Initialize Firebase 
+      admin.initializeApp({
+              credential: admin.credential.cert({
+                projectId: 'scrapcar-bf8b0',
+                clientEmail: 'firebase-adminsdk-fbsvc@scrapcar-bf8b0.iam.gserviceaccount.com',
+                privateKey: process.env.FIREBASE_SECRET.replace(/\\n/g, '\n'),
+            }),
+        });
 
   }
 
@@ -40,6 +51,27 @@ export class CarInfoController {
       ...body,
       carImage: carImage
     }
+
+    const nearbyAgents = await this.carDetailsService.fetchAllAgents()
+    const tokens = nearbyAgents.map((agent) => agent.fcm_token);
+
+    try{
+      await admin.messaging().sendEachForMulticast({
+            tokens,
+            notification: {
+              title: 'New Vehicle Near You! 🚗',
+              body: `A new car was listed nearby.`,
+            }
+          });
+
+        return {
+          success: true,
+          message: "Notification successfully sent."
+        }
+    }
+    catch (error){
+      throw new HttpException('Failed to send notification.', error);
+    }
     
 
     if (!formData.registrationNumber) {
@@ -61,6 +93,31 @@ export class CarInfoController {
       //   body: message,
       // });
 
+      // 3. Send Push Notification (New!)
+      const notificationMessage = {
+        title: "New Car Added! 🚗",
+        body: `A ${carDetails.make} ${carDetails.model} (${carDetails.year}) was just added. Check it out!`,
+        // Optional: Add deep link to car details
+            // data: { 
+            //   click_action: "FLUTTER_NOTIFICATION_CLICK",
+            //   screen: "/car_details", 
+            //   id: carDetails.uniqueId 
+            // }
+          };
+
+      const nearbyAgents = await this.carDetailsService.fetchAllAgents()
+      const tokens = nearbyAgents.map((agent) => agent.fcm_token);
+
+      await admin.messaging().sendEachForMulticast({
+        tokens,
+        notification: {
+          title: 'New Vehicle Near You! 🚗',
+          body: `A ${carDetails.make} ${carDetails.model} was listed nearby.`,
+        }
+      });
+
+      // 1. Fetch all agents with FCM tokens
+      
       return {
         success: true,
         message: 'Form submitted successfully and SMS sent.',

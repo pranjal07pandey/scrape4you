@@ -1,12 +1,4 @@
 /* Reset any existing background styles */
-body, html {
-  margin: 0;
-  padding: 0;
-  background: #f5f7fa;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  width: 100%; /* Ensure full width */
-}
-
 .quotes-page {
   background: transparent;
   padding: 20px;

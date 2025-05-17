@@ -187,7 +187,7 @@ export class UserService {
           otp: rawOtp,
           phone: phone
       }
-    }
+  }
 
   async validateOtp(otp: string, phone:string): Promise<boolean> {
 
@@ -222,13 +222,13 @@ export class UserService {
       
   }
   
-    async getActiveOtps(phone: string): Promise<Otp[]> {
+  async getActiveOtps(phone: string): Promise<Otp[]> {
       return this.otpModel.find({
         phone,
         used: false,
         expiresAt: { $gt: new Date() }
       });
-    }
+  }
     
   
 }

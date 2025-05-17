@@ -32,7 +32,7 @@ export class AuthService {
   }
 
   // Login
-  async login(email: string, password: string, deviceId: string): Promise<{ access_token: string; message: string, active_devices:Object}> {
+  async login(email: string, password: string, deviceId: string, fcm_token: string): Promise<{ access_token: string; message: string, active_devices:Object}> {
     const user = await this.userService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid Email or password');
@@ -91,7 +91,7 @@ export class AuthService {
     }
 
     // Save updated user data
-    await this.userService.updateUser(user._id.toString(), { active_devices: user.active_devices });
+    await this.userService.updateUser(user._id.toString(), { active_devices: user.active_devices, fcm_token: fcm_token });
 
     const payload = { sub: user._id, email: user.email };
     const access_token = this.jwtService.sign(payload);

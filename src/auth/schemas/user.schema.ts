@@ -79,6 +79,19 @@ export class User extends Document {
   @Prop({default: ''})
   unblock_message: string;
 
+  // add fcm_token
+  @Prop()
+  fcm_token: string;
+
+  @Prop()
+  latitude: string;
+
+  @Prop()
+  longitude: string;
+
+  @Prop()
+  distance_filter: number;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -145,13 +145,13 @@ export class AuthController {
 
       @Post('login')
       async login(@Body() body: any) {
-        const {email, password, deviceId} = body;
+        const {email, password, deviceId, fcm_token} = body;
 
         if (!deviceId){
           throw new BadRequestException('Device Id is required')
         }
         
-        const user = await this.authService.login(email, password, deviceId);
+        const user = await this.authService.login(email, password, deviceId, fcm_token);
         return user;
       }
 
@@ -334,6 +334,18 @@ export class AuthController {
           success: true, 
           message: 'Your unblock request has been submitted. Admin will contact you.'
         }
+
+      }
+
+
+      // save agent location
+      @Put('save-agent-location')
+      @UseGuards(AuthGuard('jwt'))
+      async saveAgentLocation(@User() user: any, @Body() body: {latitude: string, longitude: string, distance_filter: number}){
+        const {latitude, longitude, distance_filter} = body;
+        const userId = user._id;
+
+        return await this.userService.update(userId.toString(), {latitude, longitude, distance_filter})
 
       }
   

@@ -25,6 +25,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { AdminModule } from './admin/admin.module';
 import { Otp, OtpSchema } from './auth/schemas/otp.schema';
 import { QuotesModule } from './quote/quote.module';
+import { NotificationsModule } from './notifications/notifications.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -50,6 +51,7 @@ import { QuotesModule } from './quote/quote.module';
     StripeModule,
     AdminModule,
     QuotesModule,
+    NotificationsModule,
   ],
   controllers: [AppController, CarInfoController, AuthController],
   providers: [AppService, CarInfoService, CarDetailsService, AuthService, UserService, S3Service],
