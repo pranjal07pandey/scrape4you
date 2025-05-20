@@ -6,6 +6,7 @@ import VehicleQuoteEditForm from './components/VehicleQuoteEditForm';
 import AllQuotesListing from './components/AllQuotesListing';
 import Terms from './components/TermAndCondition';
 import Contact from './components/Contact';
+import PrivacyPolicy from './components/PrivacyPolicy';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/list-quotes/:uniqueId/:listingId" element={<AllQuotesListing/>} />
         <Route path="/terms" element={<Terms/>} />
         <Route path="/contact" element={<Contact/>} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
 
       </Routes>
     </Router>

@@ -1,0 +1,51 @@
+.privacy-page {
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  font-family: Arial, sans-serif;
+}
+
+.privacy-container {
+  max-width: 800px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.privacy-container h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.privacy-container h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.privacy-container p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.privacy-container ul {
+  margin-left: 1rem;
+  margin-bottom: 1rem;
+}
+
+.text-blue-600 {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
