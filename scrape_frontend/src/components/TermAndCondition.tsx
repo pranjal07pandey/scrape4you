@@ -10,7 +10,7 @@ const Terms: React.FC = () => {
         <p>Last updated: May 18, 2025</p>
 
         <p>
-          Welcome to BusyMotors, a mobile application operated by Salvage Motors ("Company", "we", "our", or "us") based in the United Kingdom. These Terms and Conditions ("Terms") govern your access to and use of the BusyMotors mobile application (the "App") and the services we provide, including car scrapping and salvage.
+          Welcome to Salvage Motors, a mobile application operated by Salvage Motors ("Company", "we", "our", or "us") based in the United Kingdom. These Terms and Conditions ("Terms") govern your access to and use of the BusyMotors mobile application (the "App") and the services we provide, including car scrapping and salvage.
         </p>
 
         <h2>1. Acceptance of Terms</h2>
@@ -61,8 +61,8 @@ const Terms: React.FC = () => {
         <h2>10. Contact Us</h2>
         <p>If you have any questions about these Terms, please contact us at:</p>
         <ul>
-          <li>Email: <a href="mailto:pranjalpandey1369@gmail.com">pranjalpandey1369@gmail.com</a></li>
-          <li>Phone: <a href="tel:+447887770243">+44 7887 770243</a></li>
+          <li>Email: <a href="mailto:salvagemotor4cash@gmail.com" className="text-blue-600">Salvagemotor4cash@gmail.com</a></li>
+          <li>Phone: <a href="tel:+447425106358" className="text-blue-600">+447425106358</a></li>
         </ul>
 
         <p className="footer-note">

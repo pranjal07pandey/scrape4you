@@ -57,8 +57,8 @@ const PrivacyPolicy: React.FC = () => {
           If you have any questions or concerns about this Privacy Policy, you can reach us at:
         </p>
         <ul className="mb-4 list-disc list-inside">
-          <li>Email: <a href="mailto:pranjalpandey1369@gmail.com" className="text-blue-600">pranjalpandey1369@gmail.com</a></li>
-          <li>Phone: <a href="tel:+447887770243" className="text-blue-600">+44 7887 770243</a></li>
+          <li>Email: <a href="mailto:salvagemotor4cash@gmail.com" className="text-blue-600">Salvagemotor4cash@gmail.com</a></li>
+          <li>Phone: <a href="tel:+447425106358" className="text-blue-600">+447425106358</a></li>
         </ul>
 
         <p className="text-sm text-gray-500 mt-6">
