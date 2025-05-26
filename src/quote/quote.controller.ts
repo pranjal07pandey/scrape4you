@@ -1,10 +1,14 @@
 // quotes/quotes.controller.ts
 import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { QuotesService } from './quote.service';
+import { UserService } from 'src/auth/user.service';
 
 @Controller('quotes')
 export class QuotesController {
-  constructor(private readonly quotesService: QuotesService) {}
+  constructor(
+    private readonly quotesService: QuotesService,
+    private readonly userService:  UserService)
+  {}
 
   @Post('create')
   async createQuote(
@@ -30,13 +34,17 @@ export class QuotesController {
 
   }
 
-  @Get(':listingId')
-  async getClientQuotes(@Param('listingId') listingId: string) {
+  @Get(':listingId/:agentId')
+  async getClientQuotes(@Param('listingId') listingId: string, @Param('agentId') agentId: string) {
     const quotes = await this.quotesService.getQuotesForListing(listingId);
 
+    const agent = await this.userService.findById(agentId)
+    const agentName = agent.first_name + ' ' + agent.last_name;
+    const agentContact = agent.phone;
+  
     const filteredData = quotes.map((item: any) => ({
-      agentName: "Test",
-      agentContact: "12345",
+      agentName: agentName,
+      agentContact: agentContact,
       amount: item.amount,
       message: item.message || '', // handles cases where message is missing
       created_at: item.createdAt

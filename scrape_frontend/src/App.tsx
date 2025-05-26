@@ -14,7 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<VehicleQuoteForm />} />
         <Route path="/edit-form/:uniqueId" element={<VehicleQuoteEditForm />} />
-        <Route path="/list-quotes/:uniqueId/:listingId" element={<AllQuotesListing/>} />
+        <Route path="/list-quotes/:listingId/:agentId" element={<AllQuotesListing/>} />
         <Route path="/terms" element={<Terms/>} />
         <Route path="/contact" element={<Contact/>} />
         <Route path="/privacy-policy" element={<PrivacyPolicy/>} />

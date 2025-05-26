@@ -4,10 +4,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Quote, QuoteSchema } from './quote.schema';
 import { QuotesController } from './quote.controller';
 import { QuotesService } from './quote.service';
+import { UserModule } from 'src/auth/user.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Quote.name, schema: QuoteSchema }])
+    MongooseModule.forFeature([{ name: Quote.name, schema: QuoteSchema }]),
+    UserModule
   ],
   controllers: [QuotesController],
   providers: [QuotesService],
