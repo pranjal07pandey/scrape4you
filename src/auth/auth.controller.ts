@@ -28,8 +28,8 @@ export class AuthController {
       @Post('attemptLogin')
       async attemptLogin(@Body() body: { email: string, password: string, deviceId: string}){
         const {email, password, deviceId} = body;
-
         const now = new Date();
+
 
         const user = await this.userService.findByEmail(email);
         if (!user){
@@ -55,63 +55,20 @@ export class AuthController {
         const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
         const deviceLimit = isCorporate ? 2 : 1;
 
-        // new: check for multi-device violations
-        if (!user.active_devices.includes(deviceId)){
-          if (user.active_devices.length >= deviceLimit){
-
-            // This is a violation - increment counter
-            const updatedViolations = user.login_violations + 1;
-            let lockoutUntil = null;
-            let message = '';
-
-            // Apply appropriate lockout based on violation count
-                switch (updatedViolations) {
-                  case 2:
-                    lockoutUntil = new Date(now.getTime() + 3 * 60 * 1000); // 3 hours
-                    message = 'Second violation: 3-mins lockout with warning.';
-                    break;
-                  case 3:
-                    lockoutUntil = new Date(now.getTime() + 4 * 60 * 1000); // 24 hours
-                    message = 'Third violation: 4-mins lockout with final warning.';
-                    break;
-                  case 4:
-                    lockoutUntil = null;
-                    message = 'Fourth violation: Account permanently blocked. Contact admin.';
-                    break;
-                }
-
-              // Update user with violation and lockout
-              await this.userService.update(user._id.toString(), {
-                login_violations: updatedViolations,
-                lockout_until: lockoutUntil,
-                is_blocked: updatedViolations >= 4
-              });
-
-              if (updatedViolations > 1){
-                throw new UnauthorizedException(message);
-              }
-              else{
-                return {
-                  requires_confirmation: true,
-                  message: isCorporate 
-                    ? 'There are already 2 devices logged in. Continue will log out your oldest device.'
-                    : 'There is already a device logged in. Continue will log it out.'
-                };
-              }
-
-          }
-        }
-
-        // Reset violation counter on successful login from allowed device
-        if (user.login_violations > 0 && user.active_devices.includes(deviceId)) {
-          await this.userService.update(user._id.toString(), {
-            login_violations: 0,
-            lockout_until: null
-          });
+        // Device check - only flag potential violation here
+        if (!user.active_devices.includes(deviceId) && user.active_devices.length >= deviceLimit) {
+          return {
+            requires_confirmation: true,
+            message: isCorporate 
+              ? 'There are already 2 devices logged in. Continue will log out your oldest device.'
+              : 'There is already a device logged in. Continue will log it out.',
+            // Include current violation count for reference
+            current_violations: user.login_violations
+          };
         }
 
         // No confirmation needed
-        return { requires_confirmation: false };
+        return { requires_confirmation: false, current_violations: user.login_violations };
 
         // const COOLDOWN_MINUTES = 1;
         // const NORMAL_LOGIN_LIMIT = 1;
@@ -146,13 +103,70 @@ export class AuthController {
       @Post('login')
       async login(@Body() body: any) {
         const {email, password, deviceId, fcm_token} = body;
+        const now = new Date();
 
         if (!deviceId){
           throw new BadRequestException('Device Id is required')
         }
+
+        const user = await this.userService.findByEmail(email);
+        if (!user) {
+          throw new UnauthorizedException('Invalid credentials');
+        }
+
+        // Re-check conditions in case they changed since attemptLogin
+        const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
+        const deviceLimit = isCorporate ? 2 : 1;
+
+        // 
+        if (!user.active_devices.includes(deviceId)){
+          if (user.active_devices.length >= deviceLimit){
+
+            // This is a violation - increment counter
+            const updatedViolations = user.login_violations + 1;
+            let lockoutUntil = null;
+            let message = '';
+
+            // Apply appropriate lockout based on violation count
+                switch (updatedViolations) {
+                  case 2:
+                    lockoutUntil = new Date(now.getTime() + 3 * 60 * 1000); // 3 hours
+                    message = 'First Login violation: 3-mins lockout with warning.';
+                    break;
+                  case 3:
+                    lockoutUntil = new Date(now.getTime() + 4 * 60 * 1000); // 24 hours
+                    message = 'Second Login violation: 4-mins lockout with final warning.';
+                    break;
+                  case 4:
+                    lockoutUntil = null;
+                    message = 'Third Login violation: Account permanently blocked. Contact admin.';
+                    break;
+                }
+
+              // Update user with violation and lockout
+              await this.userService.update(user._id.toString(), {
+                login_violations: updatedViolations,
+                lockout_until: lockoutUntil,
+                is_blocked: updatedViolations >= 4
+              });
+
+              if (updatedViolations > 1){
+                throw new UnauthorizedException(message);
+              }
+          }
+        }
+
+        // Reset violation counter on successful login from allowed device
+        // if (user.login_violations > 0 && user.active_devices.includes(deviceId)) {
+        //   await this.userService.update(user._id.toString(), {
+        //     login_violations: 0,
+        //     lockout_until: null
+        //   });
+        // }
         
-        const user = await this.authService.login(email, password, deviceId, fcm_token);
-        return user;
+        const loggedInUser  = await this.authService.login(email, password, deviceId, fcm_token);
+        return loggedInUser ;
+
       }
 
       @Get('get-user-details')
