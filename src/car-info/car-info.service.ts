@@ -103,8 +103,8 @@ export class CarInfoService {
           // Save to MongoDB
           await this.carDetailsService.create(carData);
 
-          return {'status': response.status, 'statusText': response.statusText, 'uniqueId': carData.uniqueId};
-
+          return {'status': response.status, 'statusText': response.statusText, 'uniqueId': carData.uniqueId,
+             'make': carData.make, 'model': carData.model};
      
         } catch (error) {
           console.error('Failed to fetch car info:', error.response?.data || error.message);
