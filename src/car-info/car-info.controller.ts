@@ -52,26 +52,26 @@ export class CarInfoController {
       carImage: carImage
     }
 
-    const nearbyAgents = await this.carDetailsService.fetchAllAgents()
-    const tokens = nearbyAgents.map((agent) => agent.fcm_token);
+    // const nearbyAgents = await this.carDetailsService.fetchAllAgents()
+    // const tokens = nearbyAgents.map((agent) => agent.fcm_token);
 
-    try{
-      await admin.messaging().sendEachForMulticast({
-            tokens,
-            notification: {
-              title: 'New Vehicle Near You! 🚗',
-              body: `A new car was listed nearby.`,
-            }
-          });
+    // try{
+    //   await admin.messaging().sendEachForMulticast({
+    //         tokens,
+    //         notification: {
+    //           title: 'New Vehicle Near You! 🚗',
+    //           body: `A new car was listed nearby.`,
+    //         }
+    //       });
 
-        return {
-          success: true,
-          message: "Notification successfully sent."
-        }
-    }
-    catch (error){
-      throw new HttpException('Failed to send notification.', error);
-    }
+    //     return {
+    //       success: true,
+    //       message: "Notification successfully sent."
+    //     }
+    // }
+    // catch (error){
+    //   throw new HttpException('Failed to send notification.', error);
+    // }
     
 
     if (!formData.registrationNumber) {
@@ -93,18 +93,7 @@ export class CarInfoController {
       //   body: message,
       // });
 
-      // 3. Send Push Notification (New!)
-      const notificationMessage = {
-        title: "New Car Added! 🚗",
-        body: `A ${carDetails.make} ${carDetails.model} (${carDetails.year}) was just added. Check it out!`,
-        // Optional: Add deep link to car details
-            // data: { 
-            //   click_action: "FLUTTER_NOTIFICATION_CLICK",
-            //   screen: "/car_details", 
-            //   id: carDetails.uniqueId 
-            // }
-          };
-
+      // 1. Fetch all agents with FCM tokens
       const nearbyAgents = await this.carDetailsService.fetchAllAgents()
       const tokens = nearbyAgents.map((agent) => agent.fcm_token);
 
@@ -116,7 +105,6 @@ export class CarInfoController {
         }
       });
 
-      // 1. Fetch all agents with FCM tokens
       
       return {
         success: true,
@@ -124,12 +112,6 @@ export class CarInfoController {
         carDetails,
         // smsResponse,
       };
-
-      // return{
-      //   success: true,
-      //   message: 'added successfully.',
-      //   carDetails
-      // }
 
     } catch (error) {
       
