@@ -102,10 +102,21 @@ export class CarInfoController {
         notification: {
           title: 'New Vehicle Near You! 🚗',
           body: `A ${carDetails.make} ${carDetails.model} was listed nearby.`,
+        },
+        "android": {
+        "notification": {
+          "sound": "notif_sound" // No extension for Android
         }
+      },
+        "apns": {
+        "payload": {
+          "aps": {
+            "sound": "notif_sound.wav" // Full name with extension for iOS
+          }
+        }
+      }
       });
 
-      
       return {
         success: true,
         message: 'Form submitted successfully and SMS sent.',
