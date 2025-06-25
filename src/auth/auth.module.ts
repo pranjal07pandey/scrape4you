@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserModule } from './user.module';  // Import UserModule
 import { ConfigModule } from '@nestjs/config';
+import { S3Service } from 'src/car-info/upload-image';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { ConfigModule } from '@nestjs/config';
     UserModule,  // Import the UserModule to make UserService available
     ConfigModule,
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, S3Service],
+
   controllers: [AuthController],
   exports: [AuthService],
 })

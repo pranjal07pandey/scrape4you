@@ -1,11 +1,12 @@
-import { Controller, Post, Get, Body, Param, Put, UseGuards, BadRequestException, Delete, UnauthorizedException, HttpException} from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Put, UseGuards, BadRequestException, Delete, UnauthorizedException, UseInterceptors, UploadedFile} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.decorator'; // Import the custom interface
 import * as bcrypt from 'bcrypt';
-
+import { S3Service } from '../car-info/upload-image'; // Import the S3 service
 import { Twilio } from 'twilio';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 
 @Controller('auth')
@@ -15,6 +16,7 @@ export class AuthController {
     constructor(
         private authService: AuthService,
         private userService: UserService,
+        private readonly s3Service: S3Service
       ) {
         this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
       }
@@ -190,10 +192,26 @@ export class AuthController {
       }
 
       @Put('update-user-profile')
+      @UseInterceptors(FileInterceptor('profile_image'))
       @UseGuards(AuthGuard('jwt'))
-      async updateProfile(@User() user: any, @Body() body: any){
+      async updateProfile(@User() user: any,
+                         @UploadedFile() profile_image: Express.Multer.File, 
+                         @Body() body: any){
+
+        console.log('profile image...', profile_image);                  
+
+        let profile_img = 'N/A'
+        if(profile_image){
+          profile_img = await this.s3Service.uploadProfilePic(profile_image)
+        }
+
         const userId = user._id;
-        const updatedUser = await this.userService.updateUser(userId, body);
+        const data = {
+          ...body,
+          profile_image: profile_img
+        }
+
+        const updatedUser = await this.userService.updateUser(userId, data);
         return{
           message: 'Profile updated successfully',
           user:{

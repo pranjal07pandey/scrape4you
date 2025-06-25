@@ -29,7 +29,8 @@ export class User extends Document {
   @Prop({ default: now })
   date_updated: Date;
 
-  @Prop({default: 'https://salvage-motors.s3.eu-west-2.amazonaws.com/default_avatar.png'})
+  // https://salvage-motors.s3.eu-west-2.amazonaws.com/default_avatar.png
+  @Prop({default: 'N/A'})
   profile_image: string;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'CarDetails' }], default: [] })
