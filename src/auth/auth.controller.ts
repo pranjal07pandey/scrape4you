@@ -116,56 +116,51 @@ export class AuthController {
           throw new UnauthorizedException('Invalid credentials');
         }
 
+        // comment starts here
+
         // Re-check conditions in case they changed since attemptLogin
-        const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
-        const deviceLimit = isCorporate ? 2 : 1;
+        // const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
+        // const deviceLimit = isCorporate ? 2 : 1;
 
-        // 
-        if (!user.active_devices.includes(deviceId)){
-          if (user.active_devices.length >= deviceLimit){
+        // if (!user.active_devices.includes(deviceId)){
+        //   if (user.active_devices.length >= deviceLimit){
 
-            // This is a violation - increment counter
-            const updatedViolations = user.login_violations + 1;
-            let lockoutUntil = null;
-            let message = '';
+        //     // This is a violation - increment counter
+        //     const updatedViolations = user.login_violations + 1;
+        //     let lockoutUntil = null;
+        //     let message = '';
 
-            // Apply appropriate lockout based on violation count
-                switch (updatedViolations) {
-                  case 2:
-                    lockoutUntil = new Date(now.getTime() + 3 * 60 * 1000); // 3 hours
-                    message = 'First Login violation: 3-mins lockout with warning.';
-                    break;
-                  case 3:
-                    lockoutUntil = new Date(now.getTime() + 4 * 60 * 1000); // 24 hours
-                    message = 'Second Login violation: 4-mins lockout with final warning.';
-                    break;
-                  case 4:
-                    lockoutUntil = null;
-                    message = 'Third Login violation: Account permanently blocked. Contact admin.';
-                    break;
-                }
+        //     // Apply appropriate lockout based on violation count
+        //         switch (updatedViolations) {
+        //           case 2:
+        //             lockoutUntil = new Date(now.getTime() + 3 * 60 * 1000); // 3 hours
+        //             message = 'First Login violation: 3-mins lockout with warning.';
+        //             break;
+        //           case 3:
+        //             lockoutUntil = new Date(now.getTime() + 4 * 60 * 1000); // 24 hours
+        //             message = 'Second Login violation: 4-mins lockout with final warning.';
+        //             break;
+        //           case 4:
+        //             lockoutUntil = null;
+        //             message = 'Third Login violation: Account permanently blocked. Contact admin.';
+        //             break;
+        //         }
 
-              // Update user with violation and lockout
-              await this.userService.update(user._id.toString(), {
-                login_violations: updatedViolations,
-                lockout_until: lockoutUntil,
-                is_blocked: updatedViolations >= 4
-              });
+        //       // Update user with violation and lockout
+        //       await this.userService.update(user._id.toString(), {
+        //         login_violations: updatedViolations,
+        //         lockout_until: lockoutUntil,
+        //         is_blocked: updatedViolations >= 4
+        //       });
 
-              if (updatedViolations > 1){
-                throw new UnauthorizedException(message);
-              }
-          }
-        }
-
-        // Reset violation counter on successful login from allowed device
-        // if (user.login_violations > 0 && user.active_devices.includes(deviceId)) {
-        //   await this.userService.update(user._id.toString(), {
-        //     login_violations: 0,
-        //     lockout_until: null
-        //   });
+        //       if (updatedViolations > 1){
+        //         throw new UnauthorizedException(message);
+        //       }
+        //   }
         // }
-        
+
+        // comment ends here
+
         const loggedInUser  = await this.authService.login(email, password, deviceId, fcm_token);
         return loggedInUser ;
 

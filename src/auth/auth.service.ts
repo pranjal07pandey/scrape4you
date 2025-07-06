@@ -51,44 +51,29 @@ export class AuthService {
     const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
     const deviceLimit = isCorporate ? 2 : 1;
 
-    // user.login_attempts = user.login_attempts.filter(
-    //   attempt => now.getTime() - attempt.timestamp.getTime() <= cooldownWindow
-    // );
+    
 
-    // Check if the user has hit the login limit
-    // const loginLimit = isCorporate ? CORPORATE_LOGIN_LIMIT : NORMAL_LOGIN_LIMIT;
-
+    // comment starts here
+    // Device Management
     // if (!user.active_devices.includes(deviceId)){
-    //   if (user.login_attempts.length >= loginLimit) {
-    //     throw new HttpException(
-    //       `Too many login attempts. Wait ${COOLDOWN_MINUTES} minutes before trying again.`,
-    //       429, // 429 = Too Many Requests
-    //     );
+    //   if (user.active_devices.length >= deviceLimit){
+    //     if (isCorporate){
+    //       // For corporate, only remove the oldest device, FIFO
+    //       user.active_devices.shift() // removes first element
+    //       user.active_devices.push(deviceId); //Add new device at end
+    //     }
+    //     else{
+    //       //For normal accounts, replace all existing devices
+    //       user.active_devices = [deviceId];
+    //     }
     //   }
-
+    //   else{
+    //     // Under limit - just add new device
+    //     user.active_devices.push(deviceId);
+    //   }
     // }
 
-    // // Allow the login and record the attempt
-    // user.login_attempts.push({ timestamp: now, deviceId });
-
-    // Device Management
-    if (!user.active_devices.includes(deviceId)){
-      if (user.active_devices.length >= deviceLimit){
-        if (isCorporate){
-          // For corporate, only remove the oldest device, FIFO
-          user.active_devices.shift() // removes first element
-          user.active_devices.push(deviceId); //Add new device at end
-        }
-        else{
-          //For normal accounts, replace all existing devices
-          user.active_devices = [deviceId];
-        }
-      }
-      else{
-        // Under limit - just add new device
-        user.active_devices.push(deviceId);
-      }
-    }
+    // comment ends here
 
     // Save updated user data
     await this.userService.updateUser(user._id.toString(), { active_devices: user.active_devices, fcm_token: fcm_token });
@@ -97,7 +82,6 @@ export class AuthService {
     const access_token = this.jwtService.sign(payload);
 
     return {message: "Login successful", access_token, active_devices: user.active_devices };
-
 
   }
 
