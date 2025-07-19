@@ -166,6 +166,18 @@ export class AuthController {
 
       }
 
+      @Post('guest-login')
+      async guestLogin(@Body() body: any){
+        const {deviceId, fcm_token} = body;
+
+        if (!deviceId){
+          throw new BadRequestException('Device Id is required')
+        }
+
+        return await this.authService.guestLogin(deviceId, fcm_token);
+
+      }
+
       @Get('get-user-details')
       @UseGuards(AuthGuard('jwt'))
       async getProfile(@User() user: any){
@@ -181,7 +193,8 @@ export class AuthController {
           active_devices: user.active_devices,
           is_blocked: user.is_blocked,
           unblock_message: user.unblock_message,
-          login_violations: user.login_violations
+          login_violations: user.login_violations,
+          is_guest: user.is_guest
         }
 
       }

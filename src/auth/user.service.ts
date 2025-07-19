@@ -6,6 +6,8 @@ import { User } from './schemas/user.schema';
 import { Otp } from './schemas/otp.schema';
 import { CarDetails } from 'src/car-details.schema';
 import { Types } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
+
 
 @Injectable()
 export class UserService {
@@ -57,6 +59,35 @@ export class UserService {
       return updatedUser;
 
   }
+
+  //create guest user
+  // user.service.ts
+
+async createGuestUser(deviceId: string): Promise<User> {
+  // Generate unique guest email and password
+  const guestId = uuidv4(); // or any other unique ID generator
+  const guestEmail = `guest_${guestId}@busymotors.com`;
+  const guestPassword = await bcrypt.hash(guestId, 10); // Using guestId as password
+  
+  // Create guest user
+  const guestUser = {
+    first_name: `guest_${guestId}`,
+    last_name: `guest_${guestId}`,
+    email: guestEmail,
+    password: guestPassword,
+    login_attempts: [{
+      timestamp: new Date(),
+      deviceId: deviceId
+    }],
+    is_guest: true,
+    is_subscribed: 'None', // or whatever default subscription you want
+    fcm_token: '',
+    is_blocked: false,
+    // other default fields
+  };
+  
+  return this.userModel.create(guestUser);
+}
 
   // Find User by Email
   async findByEmail(email: string): Promise<User | null> {

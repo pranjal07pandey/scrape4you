@@ -14,7 +14,7 @@ export class User extends Document {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: false, unique: true })
   phone: string;
 
   @Prop({ required: true })
@@ -92,6 +92,9 @@ export class User extends Document {
 
   @Prop()
   distance_filter: number;
+
+  @Prop({default: false})
+  is_guest : boolean
 
 }
 

@@ -85,6 +85,31 @@ export class AuthService {
 
   }
 
+  // guest login
+  async guestLogin(deviceId: string, fcm_token: string): Promise<{ access_token: string; message: string, active_devices: Object }> {
+    // Create a new guest user
+    const guestUser = await this.userService.createGuestUser(deviceId);
+    
+    // Since it's a new guest, active_devices will be empty
+    const active_devices = [deviceId];
+    
+    // Update user with device info
+    await this.userService.updateUser(guestUser._id.toString(), { 
+      active_devices, 
+      fcm_token 
+    });
+
+    // Generate JWT token
+    const payload = { sub: guestUser._id, email: guestUser.email };
+    const access_token = this.jwtService.sign(payload);
+
+    return {
+      message: "Guest login successful", 
+      access_token, 
+      active_devices
+    };
+}
+
   // Validate User for JWT Strategy
   async validateUser(userId: string): Promise<any> {
     const user =  this.userService.findById(userId);
