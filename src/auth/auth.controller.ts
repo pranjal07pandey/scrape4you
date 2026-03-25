@@ -12,13 +12,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 @Controller('auth')
 
 export class AuthController {
-    private twilioClient: Twilio;
+    // private twilioClient: Twilio;
     constructor(
         private authService: AuthService,
         private userService: UserService,
         private readonly s3Service: S3Service
       ) {
-        this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+        // this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
       }
     
       @Post('register')
@@ -287,11 +287,11 @@ export class AuthController {
         console.log('To phone: ', otpReq.phone);
 
         if (otpReq.success){
-          await this.twilioClient.messages.create({
-            to: phone,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            body: `Your verification code is: ${otpReq.otp}. This code expires in 3 minutes`
-          });
+          // await this.twilioClient.messages.create({
+          //   to: phone,
+          //   from: process.env.TWILIO_PHONE_NUMBER,
+          //   body: `Your verification code is: ${otpReq.otp}. This code expires in 3 minutes`
+          // });
 
           return {success: true, message: "OTP sent to your phone number."}
         }

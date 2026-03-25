@@ -4,17 +4,29 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Quote extends Document {
-  @Prop({ required: true })
+  @Prop({ required: false })
   listingId: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   agentId: string;
 
-  @Prop({ required: true })
-  amount: number; // Only storing the amount as requested
+  @Prop({ required: false })
+  amount: number;
 
-  @Prop({required: false})
+  @Prop({ required: false })
   message: string;
+
+  @Prop({ required: false })
+  registrationNumber: string;
+
+  @Prop({ required: false })
+  postcode: string;
+
+  @Prop({ required: false })
+  phoneNumber: string;
+
+  @Prop({ required: false })
+  problem: string;
 }
 
 export const QuoteSchema = SchemaFactory.createForClass(Quote);

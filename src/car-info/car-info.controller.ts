@@ -1,5 +1,6 @@
 import { Controller, Post, Get, Body, BadRequestException, Patch, Param, HttpStatus, HttpException, Put, Delete, UseGuards, UseInterceptors, UploadedFile} from '@nestjs/common';
 import { CarInfoService } from './car-info.service';
+import { QuotesService } from 'src/quote/quote.service';
 import { Twilio } from 'twilio';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express'; // Import Express types
@@ -13,22 +14,13 @@ import * as admin from 'firebase-admin';
 @Controller('car')
 export class CarInfoController {
 
-  private twilioClient: Twilio;
+  // private twilioClient: Twilio;
   constructor(
     private readonly carInfoService: CarInfoService,
     private readonly carDetailsService: CarDetailsService,
-    private readonly s3Service: S3Service) {
-    this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-
-    // Initialize Firebase 
-      admin.initializeApp({
-              credential: admin.credential.cert({
-                projectId: 'scrapcar-bf8b0',
-                clientEmail: 'firebase-adminsdk-fbsvc@scrapcar-bf8b0.iam.gserviceaccount.com',
-                privateKey: process.env.FIREBASE_SECRET.replace(/\\n/g, '\n'),
-            }),
-        });
-
+    private readonly s3Service: S3Service,
+    private readonly quotesService: QuotesService) {
+    // this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
   }
 
   @Post('submit-form')
@@ -52,28 +44,6 @@ export class CarInfoController {
       carImage: carImage
     }
 
-    // const nearbyAgents = await this.carDetailsService.fetchAllAgents()
-    // const tokens = nearbyAgents.map((agent) => agent.fcm_token);
-
-    // try{
-    //   await admin.messaging().sendEachForMulticast({
-    //         tokens,
-    //         notification: {
-    //           title: 'New Vehicle Near You! 🚗',
-    //           body: `A new car was listed nearby.`,
-    //         }
-    //       });
-
-    //     return {
-    //       success: true,
-    //       message: "Notification successfully sent."
-    //     }
-    // }
-    // catch (error){
-    //   throw new HttpException('Failed to send notification.', error);
-    // }
-    
-
     if (!formData.registrationNumber) {
       throw new BadRequestException('Registration number is required');
     }   
@@ -93,42 +63,48 @@ export class CarInfoController {
       //   body: message,
       // });
 
-      // 1. Fetch all agents with FCM tokens
-      const nearbyAgents = await this.carDetailsService.fetchAllAgents()
-      const tokens = nearbyAgents.map((agent) => agent.fcm_token);
+      console.log('Car saved successfully:', carDetails.uniqueId);
 
-      await admin.messaging().sendEachForMulticast({
-        tokens,
-        notification: {
-          title: 'New Vehicle Near You! 🚗',
-          body: `A ${carDetails.make} ${carDetails.model} was listed nearby.`,
-        },
-        "android": {
-        "notification": {
-          "sound": "notif_sound" // No extension for Android
-        }
-      },
-        "apns": {
-        "payload": {
-          "aps": {
-            "sound": "notif_sound.wav" // Full name with extension for iOS
-          }
-        }
-      }
+      await this.quotesService.createQuote({
+        registrationNumber: body.registrationNumber,
+        postcode: body.postcode,
+        phoneNumber: body.phoneNumber,
+        problem: body.problem,
+        listingId: carDetails.uniqueId,
       });
+
+      // Send FCM notifications (non-blocking — won't fail the submission)
+      try {
+        const nearbyAgents = await this.carDetailsService.fetchAllAgents();
+        console.log('Fetched agents:', nearbyAgents.length);
+        const tokens = nearbyAgents.map((agent) => agent.fcm_token).filter(Boolean);
+        console.log('Valid FCM tokens:', tokens.length);
+
+        if (tokens.length > 0) {
+          const fcmResult = await admin.messaging().sendEachForMulticast({
+            tokens,
+            notification: {
+              title: 'New Vehicle Near You! 🚗',
+              body: `A new car was listed nearby.`,
+            },
+            android: { notification: { sound: 'notif_sound' } },
+            apns: { payload: { aps: { sound: 'notif_sound.wav' } } },
+          });
+          console.log('FCM result - success:', fcmResult.successCount, 'failure:', fcmResult.failureCount);
+        }
+      } catch (fcmError) {
+        console.error('FCM notification error (non-blocking):', fcmError.message);
+      }
 
       return {
         success: true,
         message: 'Form submitted successfully and SMS sent.',
         carDetails,
-        // smsResponse,
       };
 
     } catch (error) {
-      
-      console.error('Error processing form or sending SMS:', error);
+      console.error('Error processing form:', error);
       throw new HttpException('Failed to process form or send SMS.', HttpStatus.INTERNAL_SERVER_ERROR);
-
     }
 
   }

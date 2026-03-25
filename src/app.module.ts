@@ -21,7 +21,6 @@ import { AuthService } from './auth/auth.service';
 import { UserService } from './auth/user.service';
 import { JwtModule } from '@nestjs/jwt';  // Import JwtModule (if using in AppModule)
 import { S3Service } from './car-info/upload-image';
-import { StripeModule } from './stripe/stripe.module';
 import { AdminModule } from './admin/admin.module';
 import { Otp, OtpSchema } from './auth/schemas/otp.schema';
 import { QuotesModule } from './quote/quote.module';
@@ -48,7 +47,6 @@ import { NotificationsModule } from './notifications/notifications.module';
     }),
 
     AuthModule, // Auth module handles registration and login
-    StripeModule,
     AdminModule,
     QuotesModule,
     NotificationsModule,

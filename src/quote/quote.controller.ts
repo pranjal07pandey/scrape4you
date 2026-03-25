@@ -2,18 +2,17 @@
 import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { QuotesService } from './quote.service';
 import { UserService } from 'src/auth/user.service';
-import { Twilio } from 'twilio';
+// import { Twilio } from 'twilio';
 
 @Controller('quotes')
 export class QuotesController {
-  private twilioClient: Twilio;
+  // private twilioClient: Twilio;
   constructor(
     private readonly quotesService: QuotesService,
     private readonly userService:  UserService,
   )
   {
-    this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    
+    // this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
   }
 
   @Post('create')
@@ -27,19 +26,22 @@ export class QuotesController {
 
     const customerPhone = '+447887770243'
 
-    const createQuote = await this.quotesService.createQuote(listingId, agentId, amount, message);
+    const createQuote = await this.quotesService.createQuote({ listingId, agentId, amount, message });
+    console.log('createQuote result:', createQuote);
     //send sms notification
     const baseUrl = 'https://scrape4you.onrender.com/list-quotes/';
     const localUrl = 'http://localhost:5000/list-quotes/'
     const quotesLink = `${baseUrl}${listingId}/${agentId}`;
     const userMsg = `Hello, you have received a new quote of ${amount}. Click this link to view the details: ${quotesLink}`
 
+    console.log('Checking if createQuote is truthy:', !!createQuote);
     if (createQuote){
-      await this.twilioClient.messages.create({
-        to: customerPhone,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        body: userMsg
-      });
+      console.log('createQuote block entered successfully');
+      // await this.twilioClient.messages.create({
+      //   to: customerPhone,
+      //   from: process.env.TWILIO_PHONE_NUMBER,
+      //   body: userMsg
+      // });
 
       return {
       success: true,

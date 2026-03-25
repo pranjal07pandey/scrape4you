@@ -8,9 +8,17 @@ import { Quote } from './quote.schema';
 export class QuotesService {
   constructor(@InjectModel(Quote.name) private quoteModel: Model<Quote>) {}
 
-  async createQuote(listingId: string, agentId: string, amount: number, message: string) {
-    const quote = new this.quoteModel({ listingId, agentId, amount, message });
-    return quote.save();
+  async createQuote(data: Record<string, any>) {
+    try {
+      console.log('Saving quote:', data);
+      const quote = new this.quoteModel(data);
+      const saved = await quote.save();
+      console.log('Quote saved successfully:', saved._id);
+      return saved;
+    } catch (err) {
+      console.error('Failed to save quote:', err.message);
+      throw err;
+    }
   }
 
   async getQuotesForListing(listingId: string) {

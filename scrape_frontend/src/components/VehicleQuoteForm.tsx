@@ -84,7 +84,6 @@ const VehicleQuoteForm: React.FC = () => {
 
     // Simulate form submission and show the success modal
     try {
-      const local_url = 'http://localhost:5000/car/submit-form';
       const prod_url = '/car/submit-form';
 
       //create a formdata object

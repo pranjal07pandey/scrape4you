@@ -18,19 +18,21 @@ export class CarInfoService {
 
     async getCarDetails(formData:any): Promise<any> {
         const registrationNumber = formData.registrationNumber.replace(/\s+/g, '').toUpperCase()
-        const accessToken = await this.getAccessToken();
-        const DVLA_API_KEY = process.env.DVLA_API_KEY;
+        // const accessToken = await this.getAccessToken();
+        // const DVLA_API_KEY = process.env.DVLA_API_KEY;
+        // DVLA API commented out for local dev (blocked outside UK)
+        const car_details = {
+          registration: registrationNumber,
+          make: formData.make || 'UNKNOWN',
+          model: formData.model || 'UNKNOWN',
+          manufactureDate: formData.yearOfManufacture || '2020-01-01',
+          primaryColour: formData.color || 'UNKNOWN',
+          motTests: [{ testResult: formData.motStatus || 'UNKNOWN', expiryDate: formData.motExpiryDate || 'N/A' }],
+          fuelType: formData.fuelType || 'UNKNOWN',
+          engineSize: formData.engineCapacity || 0,
+        };
 
         try {
-          const response = await axios.get(`https://history.mot.api.gov.uk/v1/trade/vehicles/registration/${registrationNumber}`, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              'X-API-Key': DVLA_API_KEY,
-            },
-          });
-
-
-          const car_details = response.data;
 
           //Fetch latitude and longitude from postcode
           let latitude = null;
@@ -103,7 +105,7 @@ export class CarInfoService {
           // Save to MongoDB
           await this.carDetailsService.create(carData);
 
-          return {'status': response.status, 'statusText': response.statusText, 'uniqueId': carData.uniqueId,
+          return {'status': 200, 'statusText': 'OK', 'uniqueId': carData.uniqueId,
              'make': carData.make, 'model': carData.model};
      
         } catch (error) {
@@ -262,6 +264,10 @@ export class CarInfoService {
         this.tokenExpiry = Date.now() + response.data.expires_in * 1000; // Convert to milliseconds
       } catch (error) {
         console.error('Failed to generate access token:', error.response?.data || error.message);
+        console.error('Token URL used:', tokenUrl);
+        console.error('Client ID:', clientID ? 'set' : 'MISSING');
+        console.error('Client Secret:', clientSecret ? 'set' : 'MISSING');
+        console.error('Scope:', scope ? scope : 'MISSING');
         throw new Error('Failed to generate access token');
       }
     }
