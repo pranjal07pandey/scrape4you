@@ -54,17 +54,13 @@ export class AuthController {
           throw new UnauthorizedException('Invalid Email or password');
         }
 
-        const isCorporate = ['Corporate Salvage', 'Corporate Scrap'].includes(user.is_subscribed);
-        const deviceLimit = isCorporate ? 2 : 1;
+        const deviceLimit = 1;
 
         // Device check - only flag potential violation here
         if (!user.active_devices.includes(deviceId) && user.active_devices.length >= deviceLimit) {
           return {
             requires_confirmation: true,
-            message: isCorporate 
-              ? 'There are already 2 devices logged in. Continue will log out your oldest device.'
-              : 'There is already a device logged in. Continue will log it out.',
-            // Include current violation count for reference
+            message: 'There is already a device logged in. Continue will log it out.',
             current_violations: user.login_violations
           };
         }
@@ -230,6 +226,16 @@ export class AuthController {
             profile_image: updatedUser.profile_image
           }
         }
+      }
+
+      @Post('save-subscription')
+      @UseGuards(AuthGuard('jwt'))
+      async saveSubscription(@User() user: any, @Body() body: { is_subscribed: any[] }) {
+        const updatedUser = await this.userService.update(user._id.toString(), { is_subscribed: body.is_subscribed });
+        return {
+          message: 'Subscription saved successfully',
+          is_subscribed: updatedUser.is_subscribed,
+        };
       }
 
       @Put('update-subscription')

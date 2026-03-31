@@ -25,6 +25,11 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
+
   // Log every incoming API request
   app.use((req, res, next) => {
     const start = Date.now();
@@ -39,6 +44,7 @@ async function bootstrap() {
 
   app.use(json());
 
+  app.setGlobalPrefix('api');
   await app.listen(process.env.PORT || 5001);
 }
 bootstrap();

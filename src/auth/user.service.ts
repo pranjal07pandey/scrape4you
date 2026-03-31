@@ -178,7 +178,7 @@ async createGuestUser(deviceId: string): Promise<User> {
 
   //update subscription
   async updateSubs(userId: string, updateData: {
-    is_subscribed: string;
+    is_subscribed?: any;
     subscriptionId?: string;
     subscriptionStatus?: string;
     currentPeriodEnd?: Date;

@@ -84,7 +84,7 @@ const VehicleQuoteForm: React.FC = () => {
 
     // Simulate form submission and show the success modal
     try {
-      const prod_url = '/car/submit-form';
+      const prod_url = '/api/car/submit-form';
 
       //create a formdata object
       const formDataToSend = new FormData();
