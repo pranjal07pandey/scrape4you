@@ -25,7 +25,12 @@ export class CarInfoService {
           const response = await axios.post(
             this.apiUrl,
             { registrationNumber },
-            { headers: { 'x-api-key': this.apiKey } }
+            { headers: {
+              'x-api-key': this.apiKey,
+              'Authorization': `Bearer ${process.env.DVLA_API_KEY}`,
+              'User-Agent': 'Mozilla/5.0',
+              'Accept': 'application/json'
+            }}
           );
           car_details = response.data;
           console.log('DVLA API success:', car_details);
