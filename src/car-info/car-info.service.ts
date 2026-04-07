@@ -18,119 +18,99 @@ export class CarInfoService {
 
     async getCarDetails(formData:any): Promise<any> {
         const registrationNumber = formData.registrationNumber.replace(/\s+/g, '').toUpperCase()
+        const accessToken = await this.getAccessToken();
+        const DVLA_API_KEY = process.env.DVLA_API_KEY;
 
-        // Call DVLA API, fall back to UNKNOWN values if it fails
-        let car_details: any;
+        // Fetch DVLA data, fall back to UNKNOWN if it fails
+        let car_details: any = null;
         try {
-          const response = await axios.post(
-            this.apiUrl,
-            { registrationNumber },
-            { headers: {
-              'x-api-key': this.apiKey,
-              'Authorization': `Bearer ${process.env.DVLA_API_KEY}`,
-              'User-Agent': 'Mozilla/5.0',
-              'Accept': 'application/json'
-            }}
-          );
+          const response = await axios.get(`https://history.mot.api.gov.uk/v1/trade/vehicles/registration/${registrationNumber}`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'X-API-Key': DVLA_API_KEY,
+            },
+          });
           car_details = response.data;
           console.log('DVLA API success:', car_details);
         } catch (dvlaError) {
-          console.warn('DVLA API failed, using fallback:', dvlaError.message);
+          console.warn('DVLA API failed, using fallback:', dvlaError.response?.data || dvlaError.message);
           car_details = {
-            registrationNumber,
+            registration: registrationNumber,
             make: 'UNKNOWN',
             model: 'UNKNOWN',
-            yearOfManufacture: 'UNKNOWN',
-            colour: 'UNKNOWN',
-            motStatus: 'UNKNOWN',
-            motExpiryDate: 'N/A',
+            manufactureDate: '2000-01-01',
+            primaryColour: 'UNKNOWN',
+            motTests: [{ testResult: 'UNKNOWN', expiryDate: 'N/A' }],
             fuelType: 'UNKNOWN',
-            engineCapacity: 0,
+            engineSize: 0,
           };
         }
+
+        //Fetch latitude and longitude from postcode
+        let latitude = null;
+        let longitude = null;
+        let country = null;
+        let region = null;
+        let parliamentary_constituency = null;
+        let admin_district = null;
+        let parish = null;
+        let full_location = "";
 
         try {
-
-          //Fetch latitude and longitude from postcode
-          let latitude = null;
-          let longitude = null;
-          let country = null;
-          let region = null;
-          let parliamentary_constituency = null;
-          let admin_district = null;
-          let parish = null;
-          let full_location = ""
-
-
-          try{
-            const locationResponse = await axios.get(`${this.POSTCODE_API_URL}/${encodeURIComponent(formData.postcode)}`);
-            latitude = locationResponse.data.result.latitude;
-            longitude = locationResponse.data.result.longitude;
-            country = locationResponse.data.result.country;
-            region = locationResponse.data.result.region;
-            parliamentary_constituency = locationResponse.data.result.parliamentary_constituency;
-            admin_district = locationResponse.data.result.admin_district;
-            parish = locationResponse.data.result.parish;
-
-            full_location = parish +", "+ admin_district +", "+ parliamentary_constituency +", "+ region +", "+ country
-
-
-          }catch(error){
-            console.error("Failed to fetch coordinates:", error.message);
-            throw new HttpException(
-              'Invalid postcode provided. Please enter a correct UK postcode.',
-              HttpStatus.BAD_REQUEST
-            )
-          }
-
-          // Assign "scrape" or "salvage" tag with 50-50 probability
-          const tag = Math.random() < 0.5 ? "scrap" : "salvage";
-
-          let randomNumber = Math.random() * 3
-          randomNumber = Math.floor(randomNumber)
-
-          // Save the images based on car make
-          const displayImageURL = this.AWS_IMAGE_URL + car_details.make + `/img${randomNumber}.png`
-
-          // Store car details in the database
-          const uniqueId = uuidv4();
-          const carData = {
-            registrationNumber: car_details.registrationNumber,
-            make: car_details.make,
-            model: car_details.model || 'UNKNOWN',
-            yearOfManufacture: car_details.yearOfManufacture,
-            color: car_details.colour,
-            motStatus: car_details.motStatus,
-            motExpiryDate: car_details.motExpiryDate,
-            fuelType: car_details.fuelType,
-            engineCapacity: car_details.engineCapacity,
-
-            // form data
-            postcode: formData.postcode,
-            latitude,
-            longitude,
-            fullAddress: full_location, 
-            problem: formData.problem,
-            phoneNumber: formData.phoneNumber,
-            carImage: formData.carImage,
-            displayImage: displayImageURL,
-            tag: tag,
-            uniqueId: uniqueId // add unique id to the database entry
-            
-          };
-
-          // Save to MongoDB
-          await this.carDetailsService.create(carData);
-
-          return { status: 200, statusText: 'OK', uniqueId: carData.uniqueId, make: carData.make, model: carData.model };
-
-          
-        } catch (error) {
+          const locationResponse = await axios.get(`${this.POSTCODE_API_URL}/${encodeURIComponent(formData.postcode)}`);
+          latitude = locationResponse.data.result.latitude;
+          longitude = locationResponse.data.result.longitude;
+          country = locationResponse.data.result.country;
+          region = locationResponse.data.result.region;
+          parliamentary_constituency = locationResponse.data.result.parliamentary_constituency;
+          admin_district = locationResponse.data.result.admin_district;
+          parish = locationResponse.data.result.parish;
+          full_location = parish +", "+ admin_district +", "+ parliamentary_constituency +", "+ region +", "+ country;
+        } catch(error) {
+          console.error("Failed to fetch coordinates:", error.message);
           throw new HttpException(
-            error.response?.data?.message || 'Failed to fetch car details',
-            error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-          );
+            'Invalid postcode provided. Please enter a correct UK postcode.',
+            HttpStatus.BAD_REQUEST
+          )
         }
+
+        // Assign "scrape" or "salvage" tag with 50-50 probability
+        const tag = Math.random() < 0.5 ? "scrap" : "salvage";
+        let randomNumber = Math.floor(Math.random() * 3);
+
+        // Save the images based on car make
+        const displayImageURL = this.AWS_IMAGE_URL + car_details.make + `/img${randomNumber}.png`;
+
+        // Store car details in the database
+        const uniqueId = uuidv4();
+        const carData = {
+          registrationNumber: car_details.registration,
+          make: car_details.make,
+          model: car_details.model,
+          yearOfManufacture: car_details.manufactureDate.split("-")[0],
+          color: car_details.primaryColour,
+          motStatus: car_details.motTests[0].testResult,
+          motExpiryDate: car_details.motTests[0].expiryDate,
+          fuelType: car_details.fuelType,
+          engineCapacity: car_details.engineSize,
+
+          // form data
+          postcode: formData.postcode,
+          latitude,
+          longitude,
+          fullAddress: full_location,
+          problem: formData.problem,
+          phoneNumber: formData.phoneNumber,
+          carImage: formData.carImage,
+          displayImage: displayImageURL,
+          tag: tag,
+          uniqueId: uniqueId
+        };
+
+        // Save to MongoDB
+        await this.carDetailsService.create(carData);
+
+        return { status: 200, statusText: 'OK', uniqueId: carData.uniqueId, make: carData.make, model: carData.model };
 
       }
 
