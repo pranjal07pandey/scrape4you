@@ -28,6 +28,8 @@ export class CarInfoService {
             headers: {
               Authorization: `Bearer ${accessToken}`,
               'X-API-Key': DVLA_API_KEY,
+              'Accept': 'application/json',
+              'User-Agent': 'Mozilla/5.0 (compatible; scrape4you/1.0)',
             },
           });
           car_details = response.data;
