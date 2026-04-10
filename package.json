@@ -9,7 +9,7 @@
     "build": "npm run build:backend && npm run build:frontend",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "node dist/main.js",
-    "build:backend": "npm install --include=dev && ./node_modules/.bin/nest build",
+    "build:backend": "npm install --include=dev --legacy-peer-deps && ./node_modules/.bin/nest build",
     "build:frontend": "cd scrape_frontend && npm ci && npm run build",
     "start:dev": "npx nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -23,12 +23,12 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
+    "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.18",
-    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/jwt": "^11.0.0",
     "@nestjs/mongoose": "^11.0.4",
-    "@nestjs/passport": "^10.0.3",
+    "@nestjs/passport": "^11.0.0",
     "@nestjs/platform-express": "^11.1.18",
     "@nestjs/serve-static": "^5.0.5",
     "@stripe/stripe-js": "^5.10.0",
@@ -48,7 +48,7 @@
     "uuid": "^11.0.3"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.0.0",
+    "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.10",
     "@nestjs/testing": "^11.1.18",
     "@types/express": "^5.0.0",
