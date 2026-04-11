@@ -18,33 +18,32 @@ export class CarInfoService {
 
     async getCarDetails(formData:any): Promise<any> {
         const registrationNumber = formData.registrationNumber.replace(/\s+/g, '').toUpperCase()
-        const accessToken = await this.getAccessToken();
-        const DVLA_API_KEY = process.env.DVLA_API_KEY;
 
         // Fetch DVLA data, fall back to UNKNOWN if it fails
         let car_details: any = null;
         try {
-          const response = await axios.get(`https://history.mot.api.gov.uk/v1/trade/vehicles/registration/${registrationNumber}`, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              'X-API-Key': DVLA_API_KEY,
-              'Accept': 'application/json',
-              'User-Agent': 'Mozilla/5.0 (compatible; scrape4you/1.0)',
-            },
-          });
+          const response = await axios.post(this.apiUrl,
+            { registrationNumber },
+            {
+              headers: {
+                'x-api-key': this.apiKey,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
           car_details = response.data;
           console.log('DVLA API success:', car_details);
         } catch (dvlaError) {
           console.warn('DVLA API failed, using fallback:', dvlaError.response?.data || dvlaError.message);
           car_details = {
-            registration: registrationNumber,
+            registrationNumber: registrationNumber,
             make: 'UNKNOWN',
-            model: 'UNKNOWN',
-            manufactureDate: '2000-01-01',
-            primaryColour: 'UNKNOWN',
-            motTests: [{ testResult: 'UNKNOWN', expiryDate: 'N/A' }],
+            yearOfManufacture: 2000,
+            colour: 'UNKNOWN',
+            motStatus: 'UNKNOWN',
+            motExpiryDate: 'N/A',
             fuelType: 'UNKNOWN',
-            engineSize: 0,
+            engineCapacity: 0,
           };
         }
 
@@ -86,15 +85,14 @@ export class CarInfoService {
         // Store car details in the database
         const uniqueId = uuidv4();
         const carData = {
-          registrationNumber: car_details.registration,
+          registrationNumber: car_details.registrationNumber,
           make: car_details.make,
-          model: car_details.model,
-          yearOfManufacture: car_details.manufactureDate.split("-")[0],
-          color: car_details.primaryColour,
-          motStatus: car_details.motTests[0].testResult,
-          motExpiryDate: car_details.motTests[0].expiryDate,
+          yearOfManufacture: car_details.yearOfManufacture,
+          color: car_details.colour,
+          motStatus: car_details.motStatus,
+          motExpiryDate: car_details.motExpiryDate,
           fuelType: car_details.fuelType,
-          engineCapacity: car_details.engineSize,
+          engineCapacity: car_details.engineCapacity,
 
           // form data
           postcode: formData.postcode,
@@ -112,7 +110,7 @@ export class CarInfoService {
         // Save to MongoDB
         await this.carDetailsService.create(carData);
 
-        return { status: 200, statusText: 'OK', uniqueId: carData.uniqueId, make: carData.make, model: carData.model };
+        return { status: 200, statusText: 'OK', uniqueId: carData.uniqueId, make: carData.make };
 
       }
 
