@@ -48,7 +48,7 @@ export class AuthService {
       throw new UnauthorizedException('Your account is blocked. Please contact admin to unblock your account.')
     }
 
-    const isCorporate = user.is_subscribed.some((s: any) => ['Corporate Salvage', 'Corporate Scrap'].includes(s.identifier));
+    const isCorporate = Array.isArray(user.is_subscribed) && user.is_subscribed.some((s: any) => ['Corporate Salvage', 'Corporate Scrap'].includes(s.identifier));
     const deviceLimit = isCorporate ? 2 : 1;
 
     
