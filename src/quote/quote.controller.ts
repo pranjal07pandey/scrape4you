@@ -29,7 +29,7 @@ export class QuotesController {
     const createQuote = await this.quotesService.createQuote({ listingId, agentId, amount, message });
     console.log('createQuote result:', createQuote);
     //send sms notification
-    const baseUrl = 'https://scrape4you.onrender.com/list-quotes/';
+    const baseUrl = (process.env.APP_URL || 'https://scrape4you.onrender.com') + '/list-quotes/';
     const localUrl = 'http://localhost:5000/list-quotes/'
     const quotesLink = `${baseUrl}${listingId}/${agentId}`;
     const userMsg = `Hello, you have received a new quote of ${amount}. Click this link to view the details: ${quotesLink}`

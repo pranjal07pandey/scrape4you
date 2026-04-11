@@ -54,7 +54,7 @@ export class CarInfoController {
       const carDetails =  await this.carInfoService.getCarDetails(formData);
 
       // Send sms notification
-      const baseUrl = 'https://scrape4you.onrender.com/edit-form/'
+      const baseUrl = (process.env.APP_URL || 'https://scrape4you.onrender.com') + '/edit-form/'
       const editLink = `${baseUrl}${carDetails.uniqueId}`
       const message = `Hello, your information has been saved successfully. Our agent will contact you soon. In order to edit or delete your posting go to ${editLink}`;
       // const smsResponse = await this.twilioClient.messages.create({
