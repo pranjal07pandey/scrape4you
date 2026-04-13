@@ -112,7 +112,7 @@ export class AuthService {
 
   // Validate User for JWT Strategy
   async validateUser(userId: string): Promise<any> {
-    const user =  this.userService.findById(userId);
+    const user = await this.userService.findById(userId);
     if (!user){
       return null;
     }
