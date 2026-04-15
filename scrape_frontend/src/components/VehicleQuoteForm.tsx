@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import "./VehicleQuoteForm.css";
-import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css';
 
 // Define the types for the form data and errors
 interface FormData {
@@ -39,7 +37,8 @@ const VehicleQuoteForm: React.FC = () => {
     setErrors({ ...errors, [name]: "" }); // Clear error for this field
   };
 
-  const handlePhoneChange = (value: string) => {
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 11);
     setFormData({ ...formData, phoneNumber: value });
     setErrors({ ...errors, phoneNumber: "" });
   };
@@ -63,6 +62,8 @@ const VehicleQuoteForm: React.FC = () => {
 
     if (!formData.phoneNumber.trim()) {
       newErrors.phoneNumber = "Phone number is required.";
+    } else if (formData.phoneNumber.length < 10 || formData.phoneNumber.length > 11) {
+      newErrors.phoneNumber = "Enter a valid UK phone number.";
     }
 
     return newErrors;
@@ -187,19 +188,17 @@ const VehicleQuoteForm: React.FC = () => {
         <div className="form-group">
         <label htmlFor="phone-number" className="form-label">Phone Number</label> 
           <div className="phone-number-field">
-            <PhoneInput
-            country="gb" // Default country code (UK)
-            // onChange={handleChange}
-            inputClass="phone-input"
-            buttonClass="phone-dropdown"
-            value={formData.phoneNumber}
-            onChange={handlePhoneChange}
-            
-          />
-          {errors.phoneNumber && (
-          <div className="error-message">{errors.phoneNumber}</div> )}
-
-         </div>
+            <input
+              type="tel"
+              placeholder="e.g. 07911123456"
+              value={formData.phoneNumber}
+              onChange={handlePhoneChange}
+              maxLength={11}
+            />
+            {errors.phoneNumber && (
+              <div className="error-message">{errors.phoneNumber}</div>
+            )}
+          </div>
             
         </div>
 
