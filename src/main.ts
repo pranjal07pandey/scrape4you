@@ -20,7 +20,7 @@ if (!admin.apps.length) {
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors({
-    origin: ['https://busymotorsltd.co.uk', 'https://www.busymotorsltd.co.uk', 'http://localhost:3000', 'http://localhost:3001', 'https://busymotors-dashboard.onrender.com'],
+    origin: ['https://busymotorsltd.co.uk', 'https://www.busymotorsltd.co.uk', 'http://localhost:3000', 'http://localhost:3001', 'https://busymotors-dashboard.onrender.com', 'https://scrape4you-production.onrender.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
