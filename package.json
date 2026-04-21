@@ -12,7 +12,7 @@
     "build:backend": "npm install --include=dev --legacy-peer-deps && ./node_modules/.bin/nest build",
     "build:frontend": "cd scrape_frontend && npm ci && npm run build",
     "start:dev": "npx nest start --watch",
-    "start:debug": "nest start --debug --watch",
+    "start:debug": "node -r dotenv/config node_modules/.bin/nest start --debug --watch dotenv_config_path=.env.staging",
     "start:prod": "node -r dotenv/config dist/main dotenv_config_path=.env.production",
     "start:staging": "node -r dotenv/config dist/main dotenv_config_path=.env.staging",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",

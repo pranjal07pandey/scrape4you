@@ -5,7 +5,7 @@ import { join } from 'path';
 import { json } from 'express';
 import * as dotenv from 'dotenv';
 import * as admin from 'firebase-admin';
-dotenv.config();
+dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.staging' });
 
 if (!admin.apps.length) {
   try {
