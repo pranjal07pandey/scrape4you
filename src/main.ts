@@ -1,11 +1,12 @@
+import * as dotenv from 'dotenv';
+dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.staging' });
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { json } from 'express';
-import * as dotenv from 'dotenv';
 import * as admin from 'firebase-admin';
-dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.staging' });
 
 if (!admin.apps.length) {
   try {
