@@ -34,7 +34,13 @@ export class CarInfoService {
           car_details = response.data;
           console.log('DVLA API success:', car_details);
         } catch (dvlaError) {
-          console.warn('DVLA API failed, using fallback:', dvlaError.response?.data || dvlaError.message);
+          console.error('=== DVLA API FAILED ===');
+          console.error('Registration:', registrationNumber);
+          console.error('URL used:', this.apiUrl);
+          console.error('API Key set:', this.apiKey ? 'YES' : 'NO (MISSING)');
+          console.error('Status:', dvlaError.response?.status);
+          console.error('Error:', dvlaError.response?.data || dvlaError.message);
+          console.error('=======================');
           car_details = {
             registrationNumber: registrationNumber,
             make: 'UNKNOWN',

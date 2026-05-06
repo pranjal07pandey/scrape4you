@@ -7,6 +7,7 @@ interface FormData {
   postcode: string;
   phoneNumber: string;
   problem: string;
+  transmissionType: string;
   carPhoto: File | null; // Can be null or a File
 }
 
@@ -23,6 +24,7 @@ const VehicleQuoteForm: React.FC = () => {
     postcode: "",
     phoneNumber: "",
     problem: "",
+    transmissionType: "",
     carPhoto: null
   });
 
@@ -93,6 +95,7 @@ const VehicleQuoteForm: React.FC = () => {
       formDataToSend.append('postcode', formData.postcode);
       formDataToSend.append('phoneNumber', formData.phoneNumber);
       formDataToSend.append('problem', formData.problem);
+      formDataToSend.append('transmissionType', formData.transmissionType);
 
       // append the file if it exists:
       if(formData.carPhoto){
@@ -133,14 +136,14 @@ const VehicleQuoteForm: React.FC = () => {
   const closeSuccessModal = () => {
     setIsSuccess(false);
     setIsFailure(false);
-    setFormData({ registrationNumber: "", postcode: "", phoneNumber: "", problem: "", carPhoto: null }); // Reset the form
+    setFormData({ registrationNumber: "", postcode: "", phoneNumber: "", problem: "", transmissionType: "", carPhoto: null }); // Reset the form
 
   };
 
   const backToHomePage = () => {
-    setIsSuccess(false); 
+    setIsSuccess(false);
     setIsFailure(false);
-    setFormData({ registrationNumber: "", postcode: "", phoneNumber: "", problem: "", carPhoto: null }); // Reset the form
+    setFormData({ registrationNumber: "", postcode: "", phoneNumber: "", problem: "", transmissionType: "", carPhoto: null }); // Reset the form
   };
 
   return (
@@ -172,6 +175,19 @@ const VehicleQuoteForm: React.FC = () => {
             placeholder="Post Code.."
           />
           {errors.postcode && <div className="error-message">{errors.postcode}</div>}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Transmission Type</label>
+          <select
+            name="transmissionType"
+            value={formData.transmissionType}
+            onChange={handleInputChange}
+          >
+            <option value="">-- Select Transmission --</option>
+            <option value="manual">Manual</option>
+            <option value="automatic">Automatic</option>
+          </select>
         </div>
 
         <div className="form-group">

@@ -8,6 +8,7 @@ interface FormData {
   postcode: string;
   phoneNumber: string;
   problem: string;
+  transmissionType: string;
   carPhoto: File | null; // Can be null or a File
 }
 
@@ -30,6 +31,7 @@ const VehicleQuoteEditForm: React.FC = () => {
     postcode: "",
     phoneNumber: "",
     problem: "",
+    transmissionType: "",
     carPhoto: null
   });
 
@@ -54,6 +56,7 @@ const VehicleQuoteEditForm: React.FC = () => {
             postcode: data.postcode,
             phoneNumber: data.phoneNumber,
             problem: data.problem,
+            transmissionType: data.transmissionType || "",
             carPhoto: null, // Leave file upload empty for now
           });
         } else {
@@ -214,6 +217,19 @@ const VehicleQuoteEditForm: React.FC = () => {
             placeholder="Post Code.."
           />
           {errors.postcode && <div className="error-message">{errors.postcode}</div>}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Transmission Type</label>
+          <select
+            name="transmissionType"
+            value={formData.transmissionType}
+            onChange={handleInputChange}
+          >
+            <option value="">-- Select Transmission --</option>
+            <option value="manual">Manual</option>
+            <option value="automatic">Automatic</option>
+          </select>
         </div>
 
         <div className="form-group">
