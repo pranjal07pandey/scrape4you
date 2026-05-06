@@ -28,8 +28,9 @@ const VehicleQuoteForm: React.FC = () => {
     carPhoto: null
   });
 
-  const [isSuccess, setIsSuccess] = useState(false); // To control the success modal visibility
+  const [isSuccess, setIsSuccess] = useState(false);
   const [isFailure, setIsFailure] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
 
@@ -71,11 +72,8 @@ const VehicleQuoteForm: React.FC = () => {
     return newErrors;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // alert(JSON.stringify(formData, null, 2));
-
-    console.log(formData)
 
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
@@ -83,6 +81,11 @@ const VehicleQuoteForm: React.FC = () => {
       return;
     }
 
+    setIsConfirming(true); // show confirm modal
+  };
+
+  const submitForm = async () => {
+    setIsConfirming(false);
     setLoading(true) // start loading
 
     // Simulate form submission and show the success modal
@@ -148,7 +151,7 @@ const VehicleQuoteForm: React.FC = () => {
 
   return (
     <>
-    <div className={`form-container ${isSuccess || isFailure ? "blur-background" : ""}`}>
+    <div className={`form-container ${isSuccess || isFailure || isConfirming ? "blur-background" : ""}`}>
       <h2>Get Paid More - Enter your reg and get an Offer that beats Scrap Value!</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -263,6 +266,34 @@ const VehicleQuoteForm: React.FC = () => {
         </a>
       </div>
     </div>
+
+    {/* Confirm Modal */}
+    {isConfirming && (
+      <div className="success-modal">
+        <div className="modal-content">
+          <span className="close-button" onClick={() => setIsConfirming(false)}>
+            &times;
+          </span>
+          <h1>Verify Your Details</h1>
+          <div style={{ textAlign: 'left', margin: '16px 0' }}>
+            <p><strong>Registration:</strong> {formData.registrationNumber}</p>
+            <p><strong>Post Code:</strong> {formData.postcode}</p>
+            <p><strong>Transmission:</strong> {formData.transmissionType || 'Not specified'}</p>
+            <p><strong>Issues:</strong> {formData.problem || 'None'}</p>
+            <p><strong>Phone:</strong> {formData.phoneNumber}</p>
+            <p><strong>Photo:</strong> {formData.carPhoto ? formData.carPhoto.name : 'None'}</p>
+          </div>
+          <div className="back-home-btn-container" style={{ display: 'flex', gap: '12px' }}>
+            <button className="back-home-button" onClick={() => setIsConfirming(false)}>
+              Edit
+            </button>
+            <button className="submit-button" onClick={submitForm}>
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* Success Modal */}
     {isSuccess && (

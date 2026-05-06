@@ -83,8 +83,9 @@ export class CarInfoService {
           )
         }
 
-        // Assign "scrape" or "salvage" tag with 50-50 probability
-        const tag = Math.random() < 0.5 ? "scrap" : "salvage";
+        // Assign "scrap" if older than 15 years, otherwise "salvage"
+        const currentYear = new Date().getFullYear();
+        const tag = (currentYear - Number(car_details.yearOfManufacture)) > 15 ? "scrap" : "salvage";
         let randomNumber = Math.floor(Math.random() * 3);
 
         // Save the images based on car make
