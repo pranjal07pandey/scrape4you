@@ -33,6 +33,7 @@ export class CarInfoService {
           );
           car_details = response.data;
           console.log('DVLA API success:', car_details);
+          console.log('DVLA model field:', car_details.model);
         } catch (dvlaError) {
           console.error('=== DVLA API FAILED ===');
           console.error('Registration:', registrationNumber);
