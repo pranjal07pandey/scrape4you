@@ -49,6 +49,9 @@ export class CarDetails {
   @Prop({default: 'N/A'})
   problem: string;
 
+  @Prop({default: 'N/A'})
+  transmissionType: string;
+
   @Prop({ required: true })
   phoneNumber: string;
 

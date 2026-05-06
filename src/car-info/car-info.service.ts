@@ -44,6 +44,7 @@ export class CarInfoService {
           car_details = {
             registrationNumber: registrationNumber,
             make: 'UNKNOWN',
+            model: 'UNKNOWN',
             yearOfManufacture: 2000,
             colour: 'UNKNOWN',
             motStatus: 'UNKNOWN',
@@ -93,6 +94,7 @@ export class CarInfoService {
         const carData = {
           registrationNumber: car_details.registrationNumber,
           make: car_details.make,
+          model: car_details.model,
           yearOfManufacture: car_details.yearOfManufacture,
           color: car_details.colour,
           motStatus: car_details.motStatus,
@@ -102,6 +104,7 @@ export class CarInfoService {
 
           // form data
           postcode: formData.postcode,
+          transmissionType: formData.transmissionType || 'N/A',
           latitude,
           longitude,
           fullAddress: full_location,
