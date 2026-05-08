@@ -16,6 +16,7 @@ interface FormErrors {
   postcode?: string;
   phoneNumber?: string;
   problem?: string;
+  transmissionType?: string;
 }
 
 const VehicleQuoteForm: React.FC = () => {
@@ -67,6 +68,10 @@ const VehicleQuoteForm: React.FC = () => {
       newErrors.phoneNumber = "Phone number is required.";
     } else if (formData.phoneNumber.length < 10 || formData.phoneNumber.length > 11) {
       newErrors.phoneNumber = "Enter a valid UK phone number.";
+    }
+
+    if (!formData.transmissionType) {
+      newErrors.transmissionType = "Transmission type is required.";
     }
 
     return newErrors;
@@ -191,6 +196,7 @@ const VehicleQuoteForm: React.FC = () => {
             <option value="manual">Manual</option>
             <option value="automatic">Automatic</option>
           </select>
+          {errors.transmissionType && <div className="error-message">{errors.transmissionType}</div>}
         </div>
 
         <div className="form-group">
@@ -278,7 +284,7 @@ const VehicleQuoteForm: React.FC = () => {
           <div style={{ textAlign: 'left', margin: '16px 0' }}>
             <p><strong>Registration:</strong> {formData.registrationNumber}</p>
             <p><strong>Post Code:</strong> {formData.postcode}</p>
-            <p><strong>Transmission:</strong> {formData.transmissionType || 'Not specified'}</p>
+            <p><strong>Transmission:</strong> {formData.transmissionType}</p>
             <p><strong>Issues:</strong> {formData.problem || 'None'}</p>
             <p><strong>Phone:</strong> {formData.phoneNumber}</p>
             <p><strong>Photo:</strong> {formData.carPhoto ? formData.carPhoto.name : 'None'}</p>
