@@ -7,6 +7,7 @@ import AllQuotesListing from './components/AllQuotesListing';
 import Terms from './components/TermAndCondition';
 import Contact from './components/Contact';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import ResetPassword from './components/ResetPassword';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         <Route path="/terms" element={<Terms/>} />
         <Route path="/contact" element={<Contact/>} />
         <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
-
+        <Route path="/reset-password" element={<ResetPassword/>} />
       </Routes>
     </Router>
   );

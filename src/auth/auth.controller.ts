@@ -5,21 +5,18 @@ import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.decorator'; // Import the custom interface
 import * as bcrypt from 'bcrypt';
 import { S3Service } from '../car-info/upload-image'; // Import the S3 service
-import { Twilio } from 'twilio';
 import { FileInterceptor } from '@nestjs/platform-express';
+import * as admin from 'firebase-admin';
 
 
 @Controller('auth')
 
 export class AuthController {
-    private twilioClient: Twilio;
     constructor(
         private authService: AuthService,
         private userService: UserService,
         private readonly s3Service: S3Service
-      ) {
-        this.twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-      }
+      ) {}
     
       @Post('register')
       async register(@Body() body: any) {
@@ -282,67 +279,67 @@ export class AuthController {
         return this.userService.deleteAgentById(userId);
       }
 
-      // forget password, 1 request otp
+      // Forget password - check if phone has an account (Firebase sends the OTP on the frontend)
       @Post('request-otp')
       async requestOtp(@Body('phone') phone: string){
-
-        const otpReq = await this.userService.createOtp(phone);
-
-        // return otpReq;
-
-        console.log('To phone: ', otpReq.phone);
-
-        if (otpReq.success){
-          await this.twilioClient.messages.create({
-            to: phone,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            body: `Your verification code is: ${otpReq.otp}. This code expires in 3 minutes`
-          });
-
-          return {success: true, message: "OTP sent to your phone number."}
+        const user = await this.userService.findByNumber(phone);
+        if (!user) {
+          return { success: false, message: 'No account found with this phone number.' };
         }
-        else{
-          return {success: false, message: "OTP sent failed."}
-        }
+        return { success: true, message: 'Phone number verified. Proceed with Firebase OTP.' };
       }
 
-      @Post('verify-otp')
-      async verifyOtp(
-        @Body('otp') otp: string,
-        @Body('phone') phone: string
-      )
-      {
-        const isValid = await this.userService.validateOtp(otp, phone);
-
-        if (!isValid){
-          throw new BadRequestException('Cannot verify the OTP')
+      // Verify Firebase phone ID token - confirms user owns the phone
+      @Post('verify-firebase-phone')
+      async verifyFirebasePhone(@Body('firebaseIdToken') firebaseIdToken: string) {
+        let decodedToken: admin.auth.DecodedIdToken;
+        try {
+          decodedToken = await admin.auth().verifyIdToken(firebaseIdToken);
+        } catch {
+          throw new BadRequestException('Invalid Firebase token');
         }
 
-        return{
-          success: true,
-          message: "Otp verified"
+        const phone = decodedToken.phone_number;
+        if (!phone) {
+          throw new BadRequestException('Token does not contain a phone number');
         }
 
+        const user = await this.userService.findByNumber(phone);
+        if (!user) {
+          throw new BadRequestException('No account found with this phone number');
+        }
+
+        return { success: true, message: 'Phone ownership confirmed' };
       }
 
       @Put('reset-password')
-      async resetPassword(@Body('phone') phone: string, @Body('password') password: string){
-        const user = await this.userService.findByNumber(phone);
+      async resetPassword(
+        @Body('firebaseIdToken') firebaseIdToken: string,
+        @Body('password') password: string,
+      ) {
+        let decodedToken: admin.auth.DecodedIdToken;
+        try {
+          decodedToken = await admin.auth().verifyIdToken(firebaseIdToken);
+        } catch {
+          throw new BadRequestException('Invalid Firebase token');
+        }
 
-        if(!user){
-          return {success: false, message: "User not found."}
+        const phone = decodedToken.phone_number;
+        if (!phone) {
+          throw new BadRequestException('Token does not contain a phone number');
+        }
+
+        const user = await this.userService.findByNumber(phone);
+        if (!user) {
+          return { success: false, message: 'User not found.' };
         }
 
         try {
-          const update_data =  await this.userService.updateUser(user._id.toString(), {password: password})
-
-          return {success: true, update_data}
- 
+          const update_data = await this.userService.updateUser(user._id.toString(), { password });
+          return { success: true, update_data };
         } catch (error) {
-          throw new BadRequestException('Cannot change the password')
-          
+          throw new BadRequestException('Cannot change the password');
         }
-
       }
 
       // block/unblock user
