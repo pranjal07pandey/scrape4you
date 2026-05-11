@@ -52,6 +52,7 @@ export class CarInfoController {
 
       // save form data or perform business logic
       const carDetails =  await this.carInfoService.getCarDetails(formData);
+      console.log('=== CAR DETAILS ===', JSON.stringify(carDetails, null, 2));
 
       // Send sms notification
       const baseUrl = (process.env.APP_URL || 'https://scrape4you.onrender.com') + '/edit-form/'
