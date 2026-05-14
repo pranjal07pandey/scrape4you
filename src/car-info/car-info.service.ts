@@ -9,6 +9,7 @@ export class CarInfoService {
     private readonly apiKey = process.env.DVLA_MAIN_KEY;
     private readonly POSTCODE_API_URL = 'https://api.postcodes.io/postcodes';
     private readonly AWS_IMAGE_URL = 'https://car-image-database.s3.eu-west-2.amazonaws.com/';
+    private readonly DVSA_MOT_API_URL = 'https://beta.check-mot.service.gov.uk/trade/vehicles/mot-tests';
 
     private accessToken: string | null = null;
     private tokenExpiry: number | null = null;
@@ -34,6 +35,11 @@ export class CarInfoService {
           car_details = response.data;
           console.log('DVLA API success:', car_details);
           console.log('DVLA model field:', car_details.model);
+
+          // DVLA API doesn't return model — fetch it from DVSA MOT History API
+          if (!car_details.model) {
+            car_details.model = await this.getModelFromDvsa(registrationNumber);
+          }
         } catch (dvlaError) {
           console.error('=== DVLA API FAILED ===');
           console.error('Registration:', registrationNumber);
@@ -151,6 +157,27 @@ export class CarInfoService {
       return await this.carDetailsService.deleteFormByUniqueId(uniqueId);
     }
 
+
+    private async getModelFromDvsa(registrationNumber: string): Promise<string> {
+      try {
+        const token = await this.getAccessToken();
+        const response = await axios.get(this.DVSA_MOT_API_URL, {
+          params: { registration: registrationNumber },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'x-api-key': process.env.DVLA_API_KEY,
+            'Accept': 'application/json+v6',
+          },
+        });
+        const vehicle = response.data?.[0];
+        const model = vehicle?.model || null;
+        console.log('DVSA MOT model lookup:', model);
+        return model || 'UNKNOWN';
+      } catch (error) {
+        console.error('DVSA MOT model lookup failed:', error.response?.data || error.message);
+        return 'UNKNOWN';
+      }
+    }
 
     private async generateAccessToken(): Promise<void>{
       const clientID = process.env.DVLA_CLIENT_ID;
