@@ -9,7 +9,7 @@ export class CarInfoService {
     private readonly apiKey = process.env.DVLA_MAIN_KEY;
     private readonly POSTCODE_API_URL = 'https://api.postcodes.io/postcodes';
     private readonly AWS_IMAGE_URL = 'https://car-image-database.s3.eu-west-2.amazonaws.com/';
-    private readonly DVSA_MOT_API_URL = 'https://beta.check-mot.service.gov.uk/trade/vehicles/mot-tests';
+    private readonly DVSA_MOT_API_URL = 'https://history.mot.api.gov.uk/v1/trade/vehicles/registration';
 
     private accessToken: string | null = null;
     private tokenExpiry: number | null = null;
@@ -161,20 +161,20 @@ export class CarInfoService {
     private async getModelFromDvsa(registrationNumber: string): Promise<string> {
       try {
         const token = await this.getAccessToken();
-        const response = await axios.get(this.DVSA_MOT_API_URL, {
-          params: { registration: registrationNumber },
+        const response = await axios.get(`${this.DVSA_MOT_API_URL}/${registrationNumber}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'x-api-key': process.env.DVLA_API_KEY,
-            'Accept': 'application/json+v6',
+            'x-api-key': process.env.DVSA_API_KEY,
+            'Accept': 'application/json',
           },
         });
-        const vehicle = response.data?.[0];
-        const model = vehicle?.model || null;
+        const model = response.data?.model || null;
         console.log('DVSA MOT model lookup:', model);
         return model || 'UNKNOWN';
       } catch (error) {
-        console.error('DVSA MOT model lookup failed:', error.response?.data || error.message);
+        console.error('DVSA MOT model lookup failed - status:', error.response?.status);
+        console.error('DVSA MOT model lookup failed - data:', JSON.stringify(error.response?.data));
+        console.error('DVSA MOT model lookup failed - message:', error.message);
         return 'UNKNOWN';
       }
     }
