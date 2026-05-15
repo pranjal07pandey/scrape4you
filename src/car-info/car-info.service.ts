@@ -161,12 +161,14 @@ export class CarInfoService {
     private async getModelFromDvsa(registrationNumber: string): Promise<string> {
       try {
         const token = await this.getAccessToken();
+        console.log('DVSA access token:', token ? token.substring(0, 30) + '...' : 'NULL');
+        console.log('DVSA API key:', process.env.DVSA_API_KEY ? process.env.DVSA_API_KEY.substring(0, 10) + '...' : 'NULL/MISSING');
         const response = await axios.get(`${this.DVSA_MOT_API_URL}/${registrationNumber}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'x-api-key': process.env.DVSA_API_KEY,
             'Ocp-Apim-Subscription-Key': process.env.DVSA_API_KEY,
-            'Accept': 'application/json',
+            'Accept': 'application/json+v6',
           },
         });
         const model = response.data?.model || null;
