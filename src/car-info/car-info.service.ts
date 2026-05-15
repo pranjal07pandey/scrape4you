@@ -181,10 +181,10 @@ export class CarInfoService {
     }
 
     private async generateAccessToken(): Promise<void>{
-      const clientID = process.env.DVLA_CLIENT_ID;
-      const clientSecret = process.env.DVLA_CLIENT_SECRET;
+      const clientID = process.env.DVSA_CLIENT_ID;
+      const clientSecret = process.env.DVSA_CLIENT_SECRET;
       const scope = process.env.DVSA_SCOPE;
-      const tokenUrl = process.env.DVLA_ACCESS_TOKEN_URL;
+      const tokenUrl = process.env.DVSA_ACCESS_TOKEN_URL;
       
       const params = new URLSearchParams();
       params.append('grant_type', 'client_credentials');
