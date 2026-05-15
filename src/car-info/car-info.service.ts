@@ -165,6 +165,7 @@ export class CarInfoService {
           headers: {
             'Authorization': `Bearer ${token}`,
             'x-api-key': process.env.DVSA_API_KEY,
+            'Ocp-Apim-Subscription-Key': process.env.DVSA_API_KEY,
             'Accept': 'application/json',
           },
         });
