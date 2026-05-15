@@ -110,6 +110,11 @@ export class CarInfoController {
 
   }
 
+  @Get('lookup/:registration')
+  async lookupVehicle(@Param('registration') registration: string) {
+    return this.carInfoService.lookupVehicle(registration);
+  }
+
   @Patch(':id/mark-sold')
   async markCarAsSold(@Param('registration-num') id: string) {
     const updatedCar = await this.carInfoService.markAsSold(id);

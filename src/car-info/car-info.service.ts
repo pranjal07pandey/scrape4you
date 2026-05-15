@@ -131,6 +131,21 @@ export class CarInfoService {
 
       }
 
+    async lookupVehicle(registrationNumber: string): Promise<{ make: string; model: string }> {
+      const reg = registrationNumber.replace(/\s+/g, '').toUpperCase();
+      try {
+        const response = await axios.post(this.apiUrl,
+          { registrationNumber: reg },
+          { headers: { 'x-api-key': this.apiKey, 'Content-Type': 'application/json' } }
+        );
+        const make = response.data?.make || 'UNKNOWN';
+        const model = response.data?.model || await this.getModelFromDvsa(reg);
+        return { make, model };
+      } catch {
+        return { make: 'UNKNOWN', model: 'UNKNOWN' };
+      }
+    }
+
     async markAsSold(id: string): Promise<any> {
       return this.carDetailsService.markAsSold(id);
       }

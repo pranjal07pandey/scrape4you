@@ -34,6 +34,7 @@ const VehicleQuoteForm: React.FC = () => {
   const [isConfirming, setIsConfirming] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
+  const [vehicleInfo, setVehicleInfo] = useState<{ make: string; model: string } | null>(null);
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
@@ -77,13 +78,25 @@ const VehicleQuoteForm: React.FC = () => {
     return newErrors;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
+    }
+
+    // Pre-fetch make/model before showing confirm modal
+    try {
+      const reg = formData.registrationNumber.replace(/\s+/g, '').toUpperCase();
+      const res = await fetch(`/api/car/lookup/${reg}`);
+      if (res.ok) {
+        const data = await res.json();
+        setVehicleInfo(data);
+      }
+    } catch {
+      setVehicleInfo(null);
     }
 
     setIsConfirming(true); // show confirm modal
@@ -283,6 +296,8 @@ const VehicleQuoteForm: React.FC = () => {
           <h1>Verify Your Details</h1>
           <div style={{ textAlign: 'left', margin: '16px 0' }}>
             <p><strong>Registration:</strong> {formData.registrationNumber}</p>
+            {vehicleInfo && <p><strong>Make:</strong> {vehicleInfo.make}</p>}
+            {vehicleInfo && <p><strong>Model:</strong> {vehicleInfo.model}</p>}
             <p><strong>Post Code:</strong> {formData.postcode}</p>
             <p><strong>Transmission:</strong> {formData.transmissionType}</p>
             <p><strong>Issues:</strong> {formData.problem || 'None'}</p>
