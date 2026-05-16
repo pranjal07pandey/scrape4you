@@ -10,6 +10,8 @@ export class CarInfoService {
     private readonly POSTCODE_API_URL = 'https://api.postcodes.io/postcodes';
     private readonly AWS_IMAGE_URL = 'https://car-image-database.s3.eu-west-2.amazonaws.com/';
     private readonly DVSA_MOT_API_URL = 'https://history.mot.api.gov.uk/v1/trade/vehicles/registration';
+    private readonly CAR_IMAGES_API_URL = 'https://carimagesapi.com/api/v1/signed-url';
+    private readonly carImagesApiKey = process.env.CAR_IMAGES_API_KEY;
 
     private accessToken: string | null = null;
     private tokenExpiry: number | null = null;
@@ -94,8 +96,12 @@ export class CarInfoService {
         const tag = (currentYear - Number(car_details.yearOfManufacture)) > 15 ? "scrap" : "salvage";
         let randomNumber = Math.floor(Math.random() * 3);
 
-        // Save the images based on car make
-        const displayImageURL = this.AWS_IMAGE_URL + car_details.make + `/img${randomNumber}.png`;
+        // Fetch display image from CarImages API, fall back to AWS S3 if it fails
+        const displayImageURL = await this.getCarDisplayImage(
+          car_details.make,
+          car_details.model,
+          car_details.yearOfManufacture,
+        ) ?? this.AWS_IMAGE_URL + car_details.make + `/img${randomNumber}.png`;
 
         // Store car details in the database
         const uniqueId = uuidv4();
@@ -172,6 +178,30 @@ export class CarInfoService {
       return await this.carDetailsService.deleteFormByUniqueId(uniqueId);
     }
 
+
+    private async getCarDisplayImage(make: string, model: string, year: number): Promise<string | null> {
+      if (!this.carImagesApiKey || make === 'UNKNOWN') return null;
+      try {
+        const response = await axios.get(this.CAR_IMAGES_API_URL, {
+          params: {
+            api_key: this.carImagesApiKey,
+            make: make,
+            model: model,
+            year: year,
+          },
+        });
+        const data = response.data;
+        const imageUrl = data?.url || data?.image_url || data?.image || data?.signed_url || null;
+        console.log('CarImages API response:', JSON.stringify(data));
+        console.log('CarImages display URL:', imageUrl);
+        return imageUrl;
+      } catch (error) {
+        console.error('CarImages API failed - status:', error.response?.status);
+        console.error('CarImages API failed - data:', JSON.stringify(error.response?.data));
+        console.error('CarImages API failed - message:', error.message);
+        return null;
+      }
+    }
 
     private async getModelFromDvsa(registrationNumber: string): Promise<string> {
       try {
