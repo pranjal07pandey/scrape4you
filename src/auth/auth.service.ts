@@ -32,15 +32,19 @@ export class AuthService {
   }
 
   // Login
-  async login(email: string, password: string, deviceId: string, fcm_token: string): Promise<{ access_token: string; message: string, active_devices:Object}> {
-    const user = await this.userService.findByEmail(email);
+  async login(identifier: string, password: string, deviceId: string, fcm_token: string): Promise<{ access_token: string; message: string, active_devices:Object}> {
+    let user = await this.userService.findByEmail(identifier);
     if (!user) {
-      throw new UnauthorizedException('Invalid Email or password');
+      user = await this.userService.findByNumber(identifier);
+    }
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid Email or password');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     // check  if user is permanently blocked
@@ -81,7 +85,7 @@ export class AuthService {
     const payload = { sub: user._id, email: user.email };
     const access_token = this.jwtService.sign(payload);
 
-    return {message: "Login successful", access_token, active_devices: user.active_devices };
+    return { message: "Login successful", access_token, active_devices: user.active_devices };
 
   }
 
