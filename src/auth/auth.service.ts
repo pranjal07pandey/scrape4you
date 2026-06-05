@@ -32,19 +32,15 @@ export class AuthService {
   }
 
   // Login
-  async login(identifier: string, password: string, deviceId: string, fcm_token: string): Promise<{ access_token: string; message: string, active_devices:Object}> {
-    let user = await this.userService.findByEmail(identifier);
+  async login(email: string, password: string, deviceId: string, fcm_token: string): Promise<{ access_token: string; message: string, active_devices:Object}> {
+    const user = await this.userService.findByEmail(email);
     if (!user) {
-      user = await this.userService.findByNumber(identifier);
-    }
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid Email or password');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid Email or password');
     }
 
     // check  if user is permanently blocked
