@@ -92,6 +92,9 @@ export class CarInfoController {
             apns: { payload: { aps: { sound: 'notif_sound.wav' } } },
           });
           console.log('FCM result - success:', fcmResult.successCount, 'failure:', fcmResult.failureCount);
+          fcmResult.responses.forEach((resp, i) => {
+            if (!resp.success) console.error(`FCM token[${i}] error:`, resp.error?.code, resp.error?.message);
+          });
         }
       } catch (fcmError) {
         console.error('FCM notification error (non-blocking):', fcmError.message);
