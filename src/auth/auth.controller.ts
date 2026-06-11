@@ -28,13 +28,15 @@ export class AuthController {
       }
 
       @Post('attemptLogin')
-      async attemptLogin(@Body() body: { email: string, password: string, deviceId: string}){
-        const {email, password, deviceId} = body;
+      async attemptLogin(@Body() body: { email?: string, phone?: string, password: string, deviceId: string}){
+        const {email, phone, password, deviceId} = body;
         const now = new Date();
 
-        const user = await this.userService.findByEmail(email);
+        const user = email
+          ? await this.userService.findByEmail(email)
+          : await this.userService.findByNumber(phone);
         if (!user){
-          throw new UnauthorizedException('Invalid Email or password')
+          throw new UnauthorizedException('Invalid credentials')
         }
 
         // check  if user is permanently blocked
@@ -99,13 +101,19 @@ export class AuthController {
 
       @Post('login')
       async login(@Body() body: any) {
-        const {email, password, deviceId, fcm_token} = body;
+        const {email, phone, password, deviceId, fcm_token} = body;
 
         if (!deviceId){
           throw new BadRequestException('Device Id is required')
         }
 
-        const user = await this.userService.findByEmail(email);
+        if (!email && !phone) {
+          throw new BadRequestException('Email or phone number is required');
+        }
+
+        const user = email
+          ? await this.userService.findByEmail(email)
+          : await this.userService.findByNumber(phone);
         if (!user) {
           throw new UnauthorizedException('Invalid credentials');
         }
@@ -155,7 +163,7 @@ export class AuthController {
 
         // comment ends here
 
-        const loggedInUser  = await this.authService.login(email, password, deviceId, fcm_token);
+        const loggedInUser  = await this.authService.login(email, phone, password, deviceId, fcm_token);
         return loggedInUser ;
 
       }

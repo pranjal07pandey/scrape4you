@@ -32,10 +32,12 @@ export class AuthService {
   }
 
   // Login
-  async login(email: string, password: string, deviceId: string, fcm_token: string): Promise<{ access_token: string; message: string, active_devices:Object}> {
-    const user = await this.userService.findByEmail(email);
+  async login(email: string | undefined, phone: string | undefined, password: string, deviceId: string, fcm_token: string): Promise<{ access_token: string; message: string, active_devices:Object}> {
+    const user = email
+      ? await this.userService.findByEmail(email)
+      : await this.userService.findByNumber(phone);
     if (!user) {
-      throw new UnauthorizedException('Invalid Email or password');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);

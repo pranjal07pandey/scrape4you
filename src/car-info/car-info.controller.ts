@@ -76,9 +76,16 @@ export class CarInfoController {
 
       // Send FCM notifications (non-blocking — won't fail the submission)
       try {
+        const firebaseInitialized = admin.apps.length > 0;
+        console.log('Firebase initialized:', firebaseInitialized);
+
         const nearbyAgents = await this.carDetailsService.fetchAllAgents();
         console.log('Fetched agents:', nearbyAgents.length);
-        const tokens = nearbyAgents.map((agent) => agent.fcm_token).filter(Boolean);
+
+        const allTokens = nearbyAgents.map((agent) => agent.fcm_token);
+        console.log('All tokens (before filter):', JSON.stringify(allTokens));
+
+        const tokens = allTokens.filter(Boolean);
         console.log('Valid FCM tokens:', tokens.length);
 
         if (tokens.length > 0) {
@@ -93,11 +100,17 @@ export class CarInfoController {
           });
           console.log('FCM result - success:', fcmResult.successCount, 'failure:', fcmResult.failureCount);
           fcmResult.responses.forEach((resp, i) => {
-            if (!resp.success) console.error(`FCM token[${i}] error:`, resp.error?.code, resp.error?.message);
+            if (!resp.success) {
+              console.error(`FCM token[${i}] failed — code: ${resp.error?.code}, message: ${resp.error?.message}, token: ${tokens[i]}`);
+            } else {
+              console.log(`FCM token[${i}] sent successfully`);
+            }
           });
+        } else {
+          console.warn('No valid FCM tokens found — no notifications sent');
         }
       } catch (fcmError) {
-        console.error('FCM notification error (non-blocking):', fcmError.message);
+        console.error('FCM notification error (non-blocking):', fcmError.message, fcmError.stack);
       }
 
       return {
