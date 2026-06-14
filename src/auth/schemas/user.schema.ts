@@ -97,6 +97,9 @@ export class User extends Document {
   @Prop({default: false})
   is_guest : boolean
 
+  @Prop({ default: 'user', enum: ['user', 'agent', 'admin'] })
+  role: string;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
